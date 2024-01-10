@@ -1,6 +1,8 @@
 import pygame
 import os
 import sys
+from os import walk
+
 
 class SpriteCreate(pygame.sprite.Sprite):  # класс для создания спрайтов
     def __init__(self, rect_x, rect_y, file_name, visible_s, fuction_s, promt):
@@ -30,3 +32,11 @@ def load_image(name, colorkey=None):  # функция для загрузки �
     # else:
     #     image = image.convert_alpha()
     return image
+
+
+def get_files_list():
+    f = []
+    for (dirpath, dirnames, filenames) in walk("saves"):
+        f.extend(filenames)
+        break
+    return f

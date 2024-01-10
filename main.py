@@ -1,5 +1,6 @@
 import pygame as pg
 from special import *
+import pygame as pg
 
 selected = False
 selected_2 = False
@@ -69,7 +70,7 @@ def main():
                                      "btn_start_game.png",
                                      False, 'open_list', '')
 
-    sprite_file_menu = SpriteCreate(sprite_start_btn.rect.x + 350, sprite_start_btn.rect.y + 200,
+    sprite_file_menu = SpriteCreate(sprite_start_btn.rect.x + 320, sprite_start_btn.rect.y + 180,
                                     "file_list.png",
                                     False, '', '')
     # pygame.draw.rect(sprite_start_Afrika.rect.x, sprite_start_Afrika.rect.y, sprite_start_Afrika.rect)
@@ -209,6 +210,11 @@ def main():
                 if clicked_sprites_2[-1].prompt != '':
                     test_image = load_image(clicked_sprites_2[-1].prompt)
                     screen.blit(test_image, pos)
+        if sprite_file_menu.visible:
+            font = pg.font.Font(None, 32)
+            for i in range(len(get_files_list())):
+                screen.blit(font.render(get_files_list()[i], True, (255, 0, 0)),
+                            (sprite_file_menu.rect.x + 20, sprite_file_menu.rect.y + 20 + (i * 20)))
         pygame.display.update()
 
 
