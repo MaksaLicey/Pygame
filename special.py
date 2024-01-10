@@ -35,18 +35,22 @@ def load_image(name, colorkey=None):  # функция для загрузки �
 
 
 start_file = 0
-end_file = 8
+end_file = 7
 
 
 def get_files_list(app=0):
     global end_file
     global start_file
     f = []
-    start_file += app
-    end_file -= app
+    print(start_file, end_file)
     for (dirpath, dirnames, filenames) in walk("saves"):
         f.extend(filenames)
         break
-    if len(f) > 8:
+    if (start_file > 0 or app > 0) and (start_file < (end_file - 6) or app < 0):
+        start_file += app
+    if (end_file > 7 or app > 0) and (end_file < len(f) + 5 or app < 0):
+        end_file += app
+    if len(f) >= 7:
         return f[start_file:end_file]
-    return f
+    else:
+        return f

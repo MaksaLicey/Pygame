@@ -158,9 +158,9 @@ def main():
             sprite_up_list.visible = sprite_file_menu.visible
             sprite_down_list.visible = sprite_file_menu.visible
         if clicked_sprites[-1].function == 'up_list':
-            get_files_list(1)
-        if clicked_sprites[-1].function == 'down_list':
             get_files_list(-1)
+        if clicked_sprites[-1].function == 'down_list':
+            get_files_list(1)
 
     size_menu = 1100, 700  # размер меню
     # screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
