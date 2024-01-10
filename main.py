@@ -1,38 +1,5 @@
-import pygame
-import os
-import sys
 import pygame as pg
-
-
-class SpriteCreate(pygame.sprite.Sprite):  # класс для создания спрайтов
-    def __init__(self, rect_x, rect_y, file_name, visible_s, fuction_s, promt):
-        super().__init__()
-        # self.image = image
-        self.image = load_image(file_name)
-        self.size = load_image(file_name).get_size()
-        self.rect = self.image.get_rect()
-        self.rect.x = rect_x
-        self.rect.y = rect_y
-        self.visible = visible_s
-        self.function = fuction_s
-        self.prompt = promt
-
-
-def load_image(name, colorkey=None):  # функция для загрузки изображений
-    fullname = os.path.join('data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    if colorkey is not None:
-        image = image.convert()
-        if colorkey == -1:
-            colorkey = image.get_at((0, 0))
-        image.set_colorkey(colorkey)
-    # else:
-    #     image = image.convert_alpha()
-    return image
-
+from special import *
 
 selected = False
 selected_2 = False
@@ -40,6 +7,10 @@ selected_3 = False
 selected_sptite = pygame.sprite
 selected_sptite_2 = pygame.sprite
 selected_sptite_3 = pygame.sprite
+
+
+def list_create():
+    pass
 
 
 def main():
@@ -52,8 +23,8 @@ def main():
     sprite_open_setting = SpriteCreate(950, 30, "setting_btn_img.png", True, 'open_setting', '')
     sprite_btn1_setting = SpriteCreate(sprite_setting_menu.rect.x + 20, sprite_setting_menu.rect.y + 20,
                                        "setting_btn_2.png", sprite_setting_menu.visible,
-                                       'open_setting', '')  # создаем спрайт кнопки 2
-    sprite_start_btn = SpriteCreate(100, 100, "start_menu.png", False, '', '')
+                                       '', '')  # создаем спрайт кнопки 2
+    sprite_start_btn = SpriteCreate(100, 50, "start_menu.png", False, '', '')
     sprite_start_Afrika = SpriteCreate(sprite_start_btn.rect.x + 30, sprite_start_btn.rect.y + 70, "Afrika.png",
                                        False, 'selected_1', 'prompt_1.png')
     sprite_start_Europe = SpriteCreate(sprite_start_btn.rect.x + 280, sprite_start_btn.rect.y + 70, "europe.png",
@@ -94,6 +65,13 @@ def main():
     sprite_character_4 = SpriteCreate(sprite_start_btn.rect.x + 700, sprite_start_btn.rect.y + 400,
                                       "character_4.png",
                                       False, 'selected_3', 'prompt_1.png')
+    sprite_start_game = SpriteCreate(sprite_start_btn.rect.x + 350, sprite_start_btn.rect.y + 500,
+                                     "btn_start_game.png",
+                                     False, 'open_list', '')
+
+    sprite_file_menu = SpriteCreate(sprite_start_btn.rect.x + 350, sprite_start_btn.rect.y + 200,
+                                    "file_list.png",
+                                    False, '', '')
     # pygame.draw.rect(sprite_start_Afrika.rect.x, sprite_start_Afrika.rect.y, sprite_start_Afrika.rect)
 
     menu_sprites = list()  # список справйтов меню
@@ -114,6 +92,8 @@ def main():
     menu_sprites.append(sprite_character_2)
     menu_sprites.append(sprite_character_3)
     menu_sprites.append(sprite_character_4)
+    menu_sprites.append(sprite_start_game)
+    menu_sprites.append(sprite_file_menu)
 
     def sprite_checker1():
         global selected
@@ -127,6 +107,8 @@ def main():
             sprite_btn1_setting.visible = sprite_setting_menu.visible
 
         if clicked_sprites[-1].function == 'open_start_menu':
+            if sprite_start_btn.visible:
+                sprite_file_menu.visible = False
             sprite_start_btn.visible = not sprite_start_btn.visible
             sprite_start_Afrika.visible = sprite_start_btn.visible
             sprite_start_Europe.visible = sprite_start_btn.visible
@@ -140,29 +122,32 @@ def main():
             sprite_character_2.visible = sprite_start_btn.visible
             sprite_character_3.visible = sprite_start_btn.visible
             sprite_character_4.visible = sprite_start_btn.visible
-        if clicked_sprites[-1].function == 'selected_1':
+            sprite_start_game.visible = sprite_start_btn.visible
+        if clicked_sprites[-1].function == 'selected_1' and not sprite_file_menu.visible:
             if clicked_sprites[-1] != selected_sptite:
                 selected_sptite = clicked_sprites[-1]
                 selected = True
             else:
                 selected_sptite = pygame.sprite
                 selected = False
-        if clicked_sprites[-1].function == 'selected_2':
+        if clicked_sprites[-1].function == 'selected_2' and not sprite_file_menu.visible:
             if clicked_sprites[-1] != selected_sptite_2:
                 selected_sptite_2 = clicked_sprites[-1]
                 selected_2 = True
             else:
                 selected_sptite_2 = pygame.sprite
                 selected_2 = False
-        if clicked_sprites[-1].function == 'selected_3':
+        if clicked_sprites[-1].function == 'selected_3' and not sprite_file_menu.visible:
             if clicked_sprites[-1] != selected_sptite_3:
                 selected_sptite_3 = clicked_sprites[-1]
                 selected_3 = True
             else:
                 selected_sptite_3 = pygame.sprite
                 selected_3 = False
+        if (clicked_sprites[-1].function == 'open_list' and selected_sptite != pygame.sprite and
+                selected_sptite_2 != pygame.sprite and selected_sptite_3 != pygame.sprite):
+            sprite_file_menu.visible = not sprite_file_menu.visible
 
-    #
     size_menu = 1100, 700  # размер меню
     # screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     screen = pygame.display.set_mode(size_menu)
@@ -195,7 +180,8 @@ def main():
 
         screen.blit(image, (0, 0))
         group_visible_sprite.draw(screen)  # отображение видимых спрайтов
-        if selected and sprite_start_btn.visible:
+
+        if selected and sprite_start_btn.visible and not sprite_file_menu.visible and not sprite_setting_menu.visible:
             if len(clicked_sprites) > 0:
                 if selected_sptite.function == 'selected_1':
                     pygame.draw.rect(screen, (255, 0, 0), (
@@ -203,13 +189,13 @@ def main():
                         (selected_sptite.rect)[2] + 30,
                         (selected_sptite.rect)[3] + 30),
                                      width=5)
-        if selected_2 and sprite_start_btn.visible:
+        if selected_2 and sprite_start_btn.visible and not sprite_file_menu.visible and not sprite_setting_menu.visible:
             if len(clicked_sprites) > 0:
                 if selected_sptite_2.function == 'selected_2':
                     pygame.draw.rect(screen, (0, 255, 0), (
                         (selected_sptite_2.rect)[0], (selected_sptite_2.rect)[1], (selected_sptite_2.rect)[2],
                         (selected_sptite_2.rect)[3]), width=5)
-        if selected_3 and sprite_start_btn.visible:
+        if selected_3 and sprite_start_btn.visible and not sprite_file_menu.visible and not sprite_setting_menu.visible:
             if len(clicked_sprites) > 0:
                 if selected_sptite_3.function == 'selected_3':
                     pygame.draw.rect(screen, (0, 0, 255), (
