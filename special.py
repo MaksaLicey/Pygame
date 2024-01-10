@@ -34,9 +34,19 @@ def load_image(name, colorkey=None):  # функция для загрузки �
     return image
 
 
-def get_files_list():
+start_file = 0
+end_file = 8
+
+
+def get_files_list(app=0):
+    global end_file
+    global start_file
     f = []
+    start_file += app
+    end_file -= app
     for (dirpath, dirnames, filenames) in walk("saves"):
         f.extend(filenames)
         break
+    if len(f) > 8:
+        return f[start_file:end_file]
     return f
