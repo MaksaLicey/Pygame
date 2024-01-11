@@ -1,20 +1,12 @@
-import pygame as pg
 from special import *
-import pygame as pg
+from Main_Gamr_File import *
+import pygame
 
-selected = False
-selected_2 = False
-selected_3 = False
-selected_sptite = pygame.sprite
-selected_sptite_2 = pygame.sprite
-selected_sptite_3 = pygame.sprite
-
-def list_create():
-    pass
 
 
 def main():
     pygame.init()
+    text_file_name = ''
 
     group_visible_sprite = pygame.sprite.Group()  # группа для хранения видимых спрайтов
     sprite_play_btn = SpriteCreate(300, 30, "btn_GamePlay.png", True, 'open_start_menu', '')
@@ -73,14 +65,17 @@ def main():
                                     "file_list.png",
                                     False, '', '')
     sprite_up_list = SpriteCreate(sprite_file_menu.rect.x + 20, sprite_file_menu.rect.y + 200,
-                                    "up_list.png",
-                                    False, 'up_list', '')
+                                  "up_list.png",
+                                  False, 'up_list', '')
     sprite_down_list = SpriteCreate(sprite_file_menu.rect.x + 60, sprite_file_menu.rect.y + 200,
                                     "down_list.png",
                                     False, 'down_list', '')
     sprite_input_name_file = SpriteCreate(sprite_file_menu.rect.x + 20, sprite_file_menu.rect.y + 240,
-                                    "input_name_file.png",
-                                    False, 'start_input_file_name', '')
+                                          "input_name_file.png",
+                                          False, 'start_input_file_name', '')
+    sprite_crete_file = SpriteCreate(sprite_file_menu.rect.x + 30, sprite_file_menu.rect.y + 290,
+                                     "create_file.png",
+                                     False, 'create_file_and_start', '')
 
     menu_sprites = list()  # список справйтов меню
     menu_sprites.append(sprite_play_btn)
@@ -105,6 +100,17 @@ def main():
     menu_sprites.append(sprite_up_list)
     menu_sprites.append(sprite_down_list)
     menu_sprites.append(sprite_input_name_file)
+    menu_sprites.append(sprite_crete_file)
+
+    def list_file_menu():
+        if sprite_start_menu.visible:
+            sprite_file_menu.visible = not sprite_file_menu.visible
+        else:
+            sprite_file_menu.visible = False
+        sprite_up_list.visible = sprite_file_menu.visible
+        sprite_down_list.visible = sprite_file_menu.visible
+        sprite_input_name_file.visible = sprite_file_menu.visible
+        sprite_crete_file.visible = sprite_file_menu.visible
 
     def sprite_checker1():
         global selected
@@ -113,13 +119,13 @@ def main():
         global selected_sptite
         global selected_sptite_2
         global selected_sptite_3
+        global text_input_active
+        global running
         if clicked_sprites[-1].function == 'open_setting':
             sprite_setting_menu.visible = not sprite_setting_menu.visible
             sprite_btn1_setting.visible = sprite_setting_menu.visible
 
         if clicked_sprites[-1].function == 'open_start_menu':
-            if sprite_start_menu.visible:
-                sprite_file_menu.visible = False
             sprite_start_menu.visible = not sprite_start_menu.visible
             sprite_start_Afrika.visible = sprite_start_menu.visible
             sprite_start_Europe.visible = sprite_start_menu.visible
@@ -134,6 +140,8 @@ def main():
             sprite_character_3.visible = sprite_start_menu.visible
             sprite_character_4.visible = sprite_start_menu.visible
             sprite_start_game.visible = sprite_start_menu.visible
+            if not sprite_start_menu.visible:
+                list_file_menu()
         if clicked_sprites[-1].function == 'selected_1' and not sprite_file_menu.visible:
             if clicked_sprites[-1] != selected_sptite:
                 selected_sptite = clicked_sprites[-1]
@@ -157,14 +165,18 @@ def main():
                 selected_3 = False
         if (clicked_sprites[-1].function == 'open_list' and selected_sptite != pygame.sprite and
                 selected_sptite_2 != pygame.sprite and selected_sptite_3 != pygame.sprite):
-            sprite_file_menu.visible = not sprite_file_menu.visible
-            sprite_up_list.visible = sprite_file_menu.visible
-            sprite_down_list.visible = sprite_file_menu.visible
-            sprite_input_name_file.visible = sprite_file_menu.visible
+            list_file_menu()
+
         if clicked_sprites[-1].function == 'up_list':
             get_files_list(-1)
         if clicked_sprites[-1].function == 'down_list':
             get_files_list(1)
+
+        if clicked_sprites[-1].function == "start_input_file_name":
+            text_input_active = not text_input_active
+        if clicked_sprites[-1].function == "create_file_and_start" and text_file_name != "":
+            create_file(text_file_name, selected_sptite.prompt, selected_sptite_2.prompt, selected_sptite_3.prompt)
+            running = False
 
     size_menu = 1100, 700  # размер меню
     # screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -175,20 +187,27 @@ def main():
     pygame.display.set_icon(img)
     pygame.display.set_caption('The final strike')
 
-    clock = pg.time.Clock()
-    running = True
+    clock = pygame.time.Clock()
+    global running
     while running:  # основной цикл игры
         clock.tick(60)
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.MOUSEBUTTONUP:
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 clicked_sprites = [s for s in group_visible_sprite if s.rect.collidepoint(pos)]
 
                 if len(clicked_sprites) > 0:
                     sprite_checker1()
+            if event.type == pygame.KEYDOWN:
+                if text_input_active:
+                    if event.key == pygame.K_BACKSPACE:
+                        text_file_name = text_file_name[:-1]
+                    else:
+                        text_file_name += event.unicode
+
         for sprit in menu_sprites:
             if sprit.visible:
                 group_visible_sprite.add(sprit)  # добавление видимых спрайтов в группу
@@ -220,9 +239,8 @@ def main():
                         (selected_sptite_3.rect)[0], (selected_sptite_3.rect)[1], (selected_sptite_3.rect)[2],
                         (selected_sptite_3.rect)[3]), width=5)
         if sprite_file_menu.visible:
-            font = pg.font.Font(None, 32)
             for i in range(len(get_files_list())):
-                screen.blit(font.render(get_files_list()[i], True, (255, 0, 0)),
+                screen.blit(pygame.font.Font(None, 32).render(get_files_list()[i], True, (255, 0, 0)),
                             (sprite_file_menu.rect.x + 20, sprite_file_menu.rect.y + 20 + (i * 20)))
 
         if event.type == pygame.MOUSEMOTION:
@@ -230,12 +248,27 @@ def main():
             clicked_sprites_2 = [s for s in group_visible_sprite if s.rect.collidepoint(pos)]
             if len(clicked_sprites_2) > 0:
                 if clicked_sprites_2[-1].prompt != '':
-                    test_image = load_image(clicked_sprites_2[-1].prompt)
-                    screen.blit(test_image, pos)
-
+                    prompt_image = load_image(clicked_sprites_2[-1].prompt)
+                    screen.blit(prompt_image, pos)
+        if sprite_input_name_file.visible:
+            if text_input_active:
+                screen.fill((200, 100, 100), sprite_input_name_file.rect)
+                txt_surface = pygame.font.Font(None, 40).render(text_file_name, True, (70, 195, 150))
+                screen.blit(txt_surface, (sprite_input_name_file.rect.x + 10, sprite_input_name_file.rect.y + 5))
+            else:
+                txt_surface = pygame.font.Font(None, 40).render(text_file_name, True, (100, 100, 200))
+                screen.blit(txt_surface, (sprite_input_name_file.rect.x + 10, sprite_input_name_file.rect.y + 5))
         pygame.display.update()
 
 
 if __name__ == "__main__":
+    selected = False
+    selected_2 = False
+    selected_3 = False
+    selected_sptite = pygame.sprite
+    selected_sptite_2 = pygame.sprite
+    selected_sptite_3 = pygame.sprite
+    text_input_active = False
+    running = True
     main()
     pygame.quit()
