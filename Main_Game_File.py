@@ -1,13 +1,9 @@
 from special import *
-import pygame
 from pygame import *
-from screeninfo import get_monitors
 import os
-from ctypes import POINTER, WINFUNCTYPE, windll
-from ctypes.wintypes import BOOL, HWND, RECT
-import pygame
-from pygame._sdl2.video import Window
 
+
+# файл игры
 
 def create_file(name_file, start_option_1, start_option_2, start_option_3):
     print(name_file, start_option_1, start_option_2, start_option_3)
@@ -20,9 +16,8 @@ def render():
     size_menu = 1536, 803
     screen_main = pygame.display.set_mode(size_menu, RESIZABLE)
 
-    group_visible_sprite = pygame.sprite.Group()
-    Kol = Sprite_create_2(100, 100, "Kol.png")
-    group_visible_sprite.add(Kol)
+    group_sprites = pygame.sprite.Group()
+    # group_visible_sprite.add(Kol)
 
     # screen_main = pygame.display.set_mode((0, 0), pygame.FULLSCREEN, RESIZABLE)
 
@@ -44,8 +39,8 @@ def render():
                 if event.key == pygame.K_a:
                     running_2 = False
             if event.type == pygame.MOUSEBUTTONDOWN:
+                pass
                 # if collider_Kol.collidepoint(event.pos):
-                print(Kol.mask.get_at(event.pos))
                 #     print(screen_main.get_rect())
                 #     print(event.pos)
                 #     print(collider_Kol)
@@ -57,7 +52,7 @@ def render():
                              (101, 79), (90, 59), (97, 45), (62, 39), (51, 22), (71, 3), (60, 0), (14, 39),
                              (20, 64), (8, 81)])
 
-        group_visible_sprite.draw(screen_main)
+        group_sprites.draw(screen_main)
         # screen_main.blit(Kol_img, (0, 0))
         pygame.display.update()
 
