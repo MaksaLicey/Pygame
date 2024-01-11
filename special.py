@@ -54,3 +54,13 @@ def get_files_list(app=0):
         return f[start_file:end_file]
     else:
         return f
+
+
+class Sprite_create_2(pygame.sprite.Sprite):
+    def __init__(self, rect_x, rect_y, file_name):
+        super().__init__()
+        self.image = load_image(file_name)
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = rect_x
+        self.rect.y = rect_y
