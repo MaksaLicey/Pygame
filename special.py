@@ -42,7 +42,7 @@ def get_files_list(app=0):
     global end_file
     global start_file
     f = []
-    print(start_file, end_file)
+    # print(start_file, end_file)
     for (dirpath, dirnames, filenames) in walk("saves"):
         f.extend(filenames)
         break

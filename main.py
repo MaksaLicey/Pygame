@@ -9,7 +9,6 @@ selected_sptite = pygame.sprite
 selected_sptite_2 = pygame.sprite
 selected_sptite_3 = pygame.sprite
 
-
 def list_create():
     pass
 
@@ -73,12 +72,15 @@ def main():
     sprite_file_menu = SpriteCreate(sprite_start_menu.rect.x + 320, sprite_start_menu.rect.y + 180,
                                     "file_list.png",
                                     False, '', '')
-    sprite_up_list = SpriteCreate(sprite_start_menu.rect.x + 320, sprite_start_menu.rect.y + 380,
+    sprite_up_list = SpriteCreate(sprite_file_menu.rect.x + 20, sprite_file_menu.rect.y + 200,
                                     "up_list.png",
                                     False, 'up_list', '')
-    sprite_down_list = SpriteCreate(sprite_start_menu.rect.x + 360, sprite_start_menu.rect.y + 380,
+    sprite_down_list = SpriteCreate(sprite_file_menu.rect.x + 60, sprite_file_menu.rect.y + 200,
                                     "down_list.png",
                                     False, 'down_list', '')
+    sprite_input_name_file = SpriteCreate(sprite_file_menu.rect.x + 20, sprite_file_menu.rect.y + 240,
+                                    "input_name_file.png",
+                                    False, 'start_input_file_name', '')
 
     menu_sprites = list()  # список справйтов меню
     menu_sprites.append(sprite_play_btn)
@@ -102,6 +104,7 @@ def main():
     menu_sprites.append(sprite_file_menu)
     menu_sprites.append(sprite_up_list)
     menu_sprites.append(sprite_down_list)
+    menu_sprites.append(sprite_input_name_file)
 
     def sprite_checker1():
         global selected
@@ -157,6 +160,7 @@ def main():
             sprite_file_menu.visible = not sprite_file_menu.visible
             sprite_up_list.visible = sprite_file_menu.visible
             sprite_down_list.visible = sprite_file_menu.visible
+            sprite_input_name_file.visible = sprite_file_menu.visible
         if clicked_sprites[-1].function == 'up_list':
             get_files_list(-1)
         if clicked_sprites[-1].function == 'down_list':

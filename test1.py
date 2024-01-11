@@ -15,7 +15,7 @@ import pygame as pg
 
 def main():
     screen = pg.display.set_mode((640, 480))
-    font = pg.font.Font(None, 32)
+    font = pg.font.Font(None, 12)
     clock = pg.time.Clock()
     input_box = pg.Rect(100, 100, 140, 32)
     color_inactive = pg.Color('lightskyblue3')
@@ -52,10 +52,19 @@ def main():
         # Render the current text.
         txt_surface = font.render(text, True, color)
         # Resize the box if the text is too long.
-        width = max(200, txt_surface.get_width()+10)
-        input_box.w = width
+        width = txt_surface.get_width() + 10
+        # input_box.w = width
         # Blit the text.
-        screen.blit(txt_surface, (input_box.x+5, input_box.y+100))
+        print(width)
+        if width > 150:
+            for i in range(len(text)):
+                if width > 150:
+                    txt_surface = font.render(text[:i - 1], True, color)
+                    screen.blit(txt_surface, (input_box.x + 5, input_box.y + 100))
+                    print("break")
+                    break
+        else:
+            screen.blit(txt_surface, (input_box.x+5, input_box.y+100))
         # Blit the input_box rect.
         pg.draw.rect(screen, color, input_box, 2)
 
