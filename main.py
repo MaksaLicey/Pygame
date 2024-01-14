@@ -1,5 +1,7 @@
 from Main_Game_File import *
 from special import *
+import sdl2
+import ctypes
 
 
 # файл для работы с меню
@@ -7,6 +9,7 @@ from special import *
 def main():
     pygame.init()
     text_file_name = ''
+    # os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (0, 30)
 
     sprite_play_btn = SpriteCreate(300, 30, "btn_GamePlay.png", True, 'open_start_menu', '')
     # спрайт кнопки начать новую игру, экземпляр класса SpriteCreate, из special.py
@@ -126,6 +129,7 @@ def main():
             sprite_start_game.visible = sprite_start_menu.visible
             if not sprite_start_menu.visible:
                 list_file_menu()
+
         if clicked_sprites[-1].function == 'selected_1' and not sprite_file_menu.visible:
             if clicked_sprites[-1] != selected_sprite_1:
                 selected_sprite_1 = clicked_sprites[-1]
@@ -159,8 +163,8 @@ def main():
         if clicked_sprites[-1].function == "start_input_file_name":
             text_input_active = not text_input_active
         if clicked_sprites[-1].function == "create_file_and_start" and text_file_name != "":
-            create_file(text_file_name, selected_sprite_1.prompt, selected_sprite_2.prompt, selected_sprite_3.prompt)
             running = False
+            create_file(text_file_name, selected_sprite_1.prompt, selected_sprite_2.prompt, selected_sprite_3.prompt)
 
     size_menu = 1100, 700  # размер меню
     screen = pygame.display.set_mode(size_menu)
@@ -191,6 +195,7 @@ def main():
                     else:
                         text_file_name += event.unicode
 
+
         for sprit in menu_sprites:
             if sprit.visible:
                 group_visible_sprite.add(sprit)  # добавление видимых спрайтов в группу
@@ -200,7 +205,12 @@ def main():
 
         screen.blit(image_for_menu, (0, 0))
         group_visible_sprite.draw(screen)  # отображение видимых спрайтов
-
+        # print(screen.g)
+        # print(pygame.display.gl_set_attribute(flag=GL_ALPHA))
+        # display_x, display_y = screen.get_rect().topleft
+        #
+        # # Print the coordinates
+        # print("Display Coordinates: ({}, {})".format(display_x, display_y))
         if selected and sprite_start_menu.visible and not sprite_file_menu.visible and not sprite_setting_menu.visible:
             if len(clicked_sprites) > 0:
                 if selected_sprite_1.function == 'selected_1':
