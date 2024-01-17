@@ -24,6 +24,9 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if image.get_rect().collidepoint(event.pos):
+                print("1")
 
     color = pygame.Color(0)
     color.hsla = (hue, 100, 50, 100)

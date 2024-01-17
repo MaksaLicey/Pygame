@@ -25,38 +25,38 @@ def main():
                                        False, 'selected_1', 'prompt_1.png')
 
     sprite_start_latina = SpriteCreate(sprite_start_menu.rect.x + 490, sprite_start_menu.rect.y + 70, "Latina.png",
-                                       False, 'selected_1', 'prompt_1.png')
+                                       False, 'selected_1', 'prompt_latina.png')
 
     sprite_start_america = SpriteCreate(sprite_start_menu.rect.x + 650, sprite_start_menu.rect.y + 60, "America.png",
                                         False, 'selected_1', 'prompt_1.png')
 
     sprite_game_diff_1 = SpriteCreate(sprite_start_menu.rect.x + 70, sprite_start_menu.rect.y + 320,
                                       "game_difficutly_1.png",
-                                      False, 'selected_2', 'prompt_1.png')
+                                      False, 'selected_2', 'prompt_difficutly_1.png')
     # sprite_game_diff_1, sprite_game_diff_2... спрайты кнопок выбора сложности
     sprite_game_diff_2 = SpriteCreate(sprite_start_menu.rect.x + 270, sprite_start_menu.rect.y + 320,
                                       "game_difficutly_2.png",
-                                      False, 'selected_2', 'prompt_1.png')
+                                      False, 'selected_2', 'prompt_difficutly_2.png')
     sprite_game_diff_3 = SpriteCreate(sprite_start_menu.rect.x + 470, sprite_start_menu.rect.y + 320,
                                       "game_difficutly_3.png",
-                                      False, 'selected_2', 'prompt_1.png')
+                                      False, 'selected_2', 'prompt_difficutly_3.png')
     sprite_game_diff_4 = SpriteCreate(sprite_start_menu.rect.x + 670, sprite_start_menu.rect.y + 320,
                                       "game_difficutly_4.png",
-                                      False, 'selected_2', 'prompt_1.png')
+                                      False, 'selected_2', 'prompt_difficutly_4.png')
 
     sprite_character_1 = SpriteCreate(sprite_start_menu.rect.x + 100, sprite_start_menu.rect.y + 400,
                                       "character_1.png",
-                                      False, 'selected_3', 'prompt_1.png')
+                                      False, 'selected_3', 'prompt_character_1.png')
     # sprite_character_1, ... спрайты кнопок выбора лидера
     sprite_character_2 = SpriteCreate(sprite_start_menu.rect.x + 300, sprite_start_menu.rect.y + 400,
                                       "character_2.png",
-                                      False, 'selected_3', 'prompt_1.png')
+                                      False, 'selected_3', 'prompt_character_2.png')
     sprite_character_3 = SpriteCreate(sprite_start_menu.rect.x + 500, sprite_start_menu.rect.y + 400,
                                       "character_3.png",
-                                      False, 'selected_3', 'prompt_1.png')
+                                      False, 'selected_3', 'prompt_character_3.png')
     sprite_character_4 = SpriteCreate(sprite_start_menu.rect.x + 700, sprite_start_menu.rect.y + 400,
                                       "character_4.png",
-                                      False, 'selected_3', 'prompt_1.png')
+                                      False, 'selected_3', 'prompt_character_4.png')
     sprite_start_game = SpriteCreate(sprite_start_menu.rect.x + 350, sprite_start_menu.rect.y + 500,
                                      "btn_start_game.png",
                                      False, 'open_list', '')
@@ -77,13 +77,17 @@ def main():
                                      "create_file.png",
                                      False, 'create_file_and_start', '')
 
+    sprite_file_name_mistake = SpriteCreate(sprite_file_menu.rect.x - 100, sprite_file_menu.rect.y - 140,
+                                            "file_name_mistake.png",
+                                            False, 'file_name_mistake', '')
+
     # список спрайтов меню (в последующем не изменяется)
     menu_sprites = [sprite_play_btn, sprite_setting_menu, sprite_open_setting, sprite_btn1_setting, sprite_start_menu,
                     sprite_start_menu, sprite_start_afrika, sprite_start_europe, sprite_start_latina,
                     sprite_start_america, sprite_game_diff_1, sprite_game_diff_2, sprite_game_diff_3,
                     sprite_game_diff_4, sprite_character_1, sprite_character_2,
                     sprite_character_3, sprite_character_4, sprite_start_game, sprite_file_menu, sprite_up_list,
-                    sprite_down_list, sprite_input_name_file, sprite_crete_file]
+                    sprite_down_list, sprite_input_name_file, sprite_crete_file, sprite_file_name_mistake]
 
     group_visible_sprite = pygame.sprite.Group()  # группа для хранения видимых спрайтов,
 
@@ -98,6 +102,8 @@ def main():
         sprite_down_list.visible = sprite_file_menu.visible
         sprite_input_name_file.visible = sprite_file_menu.visible
         sprite_crete_file.visible = sprite_file_menu.visible
+        if not sprite_file_menu.visible:
+            sprite_file_name_mistake.visible = sprite_file_menu.visible
 
     def sprite_checker1():
         global selected
@@ -163,8 +169,14 @@ def main():
         if clicked_sprites[-1].function == "start_input_file_name":
             text_input_active = not text_input_active
         if clicked_sprites[-1].function == "create_file_and_start" and text_file_name != "":
-            running = False
-            create_file(text_file_name, selected_sprite_1.prompt, selected_sprite_2.prompt, selected_sprite_3.prompt)
+            if text_file_name in get_files_list()[1]:
+                sprite_file_name_mistake.visible = True
+            else:
+                running = False
+                create_file(text_file_name, selected_sprite_1.prompt, selected_sprite_2.prompt,
+                            selected_sprite_3.prompt)
+        if clicked_sprites[-1].function == "file_name_mistake":
+            sprite_file_name_mistake.visible = False
 
     size_menu = 1100, 700  # размер меню
     screen = pygame.display.set_mode(size_menu)
@@ -194,7 +206,8 @@ def main():
                         text_file_name = text_file_name[:-1]
                     else:
                         text_file_name += event.unicode
-
+                if event.key == pygame.K_ESCAPE and sprite_file_menu.visible:
+                    list_file_menu()
 
         for sprit in menu_sprites:
             if sprit.visible:
@@ -205,12 +218,7 @@ def main():
 
         screen.blit(image_for_menu, (0, 0))
         group_visible_sprite.draw(screen)  # отображение видимых спрайтов
-        # print(screen.g)
-        # print(pygame.display.gl_set_attribute(flag=GL_ALPHA))
-        # display_x, display_y = screen.get_rect().topleft
-        #
-        # # Print the coordinates
-        # print("Display Coordinates: ({}, {})".format(display_x, display_y))
+
         if selected and sprite_start_menu.visible and not sprite_file_menu.visible and not sprite_setting_menu.visible:
             if len(clicked_sprites) > 0:
                 if selected_sprite_1.function == 'selected_1':
@@ -234,15 +242,15 @@ def main():
                         selected_sprite_3.rect[0], selected_sprite_3.rect[1], selected_sprite_3.rect[2],
                         selected_sprite_3.rect[3]), width=5)
         if sprite_file_menu.visible:
-            for i in range(len(get_files_list())):
-                screen.blit(pygame.font.Font(None, 32).render(get_files_list()[i], True, (255, 0, 0)),
+            for i in range(len(get_files_list()[0])):
+                screen.blit(pygame.font.Font(None, 32).render(get_files_list()[0][i], True, (255, 0, 0)),
                             (sprite_file_menu.rect.x + 20, sprite_file_menu.rect.y + 20 + (i * 20)))
 
         if event.type == pygame.MOUSEMOTION:
             pos = pygame.mouse.get_pos()
             clicked_sprites_2 = [s for s in group_visible_sprite if s.rect.collidepoint(pos)]
             if len(clicked_sprites_2) > 0:
-                if clicked_sprites_2[-1].prompt != '':
+                if clicked_sprites_2[-1].prompt != '' and not sprite_file_menu.visible:
                     prompt_image = load_image(clicked_sprites_2[-1].prompt)
                     screen.blit(prompt_image, pos)
         if sprite_input_name_file.visible:

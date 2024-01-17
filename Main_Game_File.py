@@ -1,12 +1,25 @@
 from special import *
 from pygame import *
 import os
+import random
+import shutil
 
 
 # файл игры
 
 def create_file(name_file, start_option_1, start_option_2, start_option_3):
-    print(name_file, start_option_1, start_option_2, start_option_3)
+    # shutil.copy(os.path.join('starts_file', f'{start_option_1[7:-4]}.txt'), os.path.join("saves", name_file))
+    file_game = open(os.path.join("saves", name_file), mode="w", encoding="utf-8")
+    file_game.write(f"file_name = {name_file} \n")
+    file_game.write(f"map_name = {start_option_1[7:-4]} \n")
+    file_game.write(f"difficlt = {start_option_2[7:-4]} \n")
+    file_game.write(f"leader = {start_option_3[7:-4]} \n")
+    f = open(os.path.join('starts_file', f'{start_option_1[7:-4]}.txt'), 'r+', encoding="utf-8")
+    sls = f.readlines()
+    for i in sls:
+        file_game.write(i)
+    f.close()
+    file_game.close()
     pygame.quit()
     main()
 
@@ -15,31 +28,19 @@ def render():
     os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (0, 30)
 
     pygame.init()
-    # os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (0, 0)
 
     clock = pygame.time.Clock()
     size_menu = 1536, 803
     screen_main = pygame.display.set_mode(size_menu)
-
-
-
-    group_sprites = pygame.sprite.Group()
+    file_reader()
+    # Kol = SpritesCreateForMap(100, 100, "Kol.png")
+    # spite_list_province = [Kol]
+    group_visible_sprite = pygame.sprite.Group()
     # group_visible_sprite.add(Kol)
-
-    # screen_main = pygame.display.set_mode((0, 0), pygame.FULLSCREEN, RESIZABLE)
-
-    collider_Kol = pygame.draw.polygon(screen_main, (0, 255, 0),
-                                       [(11, 83), (21, 92), (34, 95), (51, 112), (80, 120), (81, 104), (76, 93),
-                                        (79, 80), (101, 79), (90, 59), (97, 45), (62, 39), (51, 22), (71, 3),
-                                        (60, 0), (14, 39), (20, 64), (8, 81)])
-
-
 
     running_2 = True
     while running_2:
         clock.tick(60)
-
-        # pygame.draw.rect(screen_main, (255, 255, 0), box1)
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
@@ -49,21 +50,12 @@ def render():
                     running_2 = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pass
-                # if collider_Kol.collidepoint(event.pos):
-                #     print(screen_main.get_rect())
-                #     print(event.pos)
-                #     print(collider_Kol)
-                # #     # for m in get_monitors():
-                # #     #     print(str(m))
-                # pass
-
-        pygame.draw.polygon(screen_main, (0, 255, 0),
-                            [(11, 83), (21, 92), (34, 95), (51, 112), (80, 120), (81, 104), (76, 93), (79, 80),
-                             (101, 79), (90, 59), (97, 45), (62, 39), (51, 22), (71, 3), (60, 0), (14, 39),
-                             (20, 64), (8, 81)])
-
-        group_sprites.draw(screen_main)
-        # screen_main.blit(Kol_img, (0, 0))
+                # for sprit in spite_list_province:
+                #     pos_in_mask = event.pos[0] - sprit.rect.x, event.pos[1] - sprit.rect.y
+                #     if sprit.rect.collidepoint(event.pos) and sprit.mask.get_at(pos_in_mask):
+                #         sprit.image = change_color(sprit.image_start,
+                #                                   (random.randrange(0, 255), random.randrange(0, 255), 0))
+        group_visible_sprite.draw(screen_main)
         pygame.display.update()
 
 
