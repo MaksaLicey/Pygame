@@ -4,6 +4,7 @@ import sys
 from os import walk
 
 
+
 # вспомогательный файл с функциями и классами
 
 class SpriteCreate(pygame.sprite.Sprite):  # класс для создания спрайтов меню

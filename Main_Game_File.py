@@ -8,7 +8,6 @@ import shutil
 # файл игры
 
 def create_file(name_file, start_option_1, start_option_2, start_option_3):
-    # shutil.copy(os.path.join('starts_file', f'{start_option_1[7:-4]}.txt'), os.path.join("saves", name_file))
     file_game = open(os.path.join("saves", name_file), mode="w", encoding="utf-8")
     file_game.write(f"file_name = {name_file}" + "\n")
     file_game.write(f"map_name = {start_option_1[7:-4]}" + "\n")

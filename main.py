@@ -92,7 +92,7 @@ def main():
 
     # Единственная для всех спрайтов меню. В цикле игры наполняется спрайтами, у которых visible = True
 
-    def list_file_menu():
+    def list_file_menu():  # отображение спрайтов меню
         if sprite_start_menu.visible:
             sprite_file_menu.visible = not sprite_file_menu.visible
         else:
@@ -104,7 +104,7 @@ def main():
         if not sprite_file_menu.visible:
             sprite_file_name_mistake.visible = sprite_file_menu.visible
 
-    def sprite_checker1():
+    def sprite_checker1():  # функция обработки нажатия на спрайты меню (не смотреть!!!)
         global selected
         global selected_2
         global selected_3
@@ -200,10 +200,11 @@ def main():
                 if len(clicked_sprites) > 0:
                     sprite_checker1()
             if event.type == pygame.KEYDOWN:
-                if text_input_active:
+                if text_input_active:  # ввод названия файла
                     if event.key == pygame.K_BACKSPACE:
                         text_file_name = text_file_name[:-1]
                     else:
+
                         text_file_name += event.unicode
                 if event.key == pygame.K_ESCAPE and sprite_file_menu.visible:
                     list_file_menu()
@@ -242,6 +243,15 @@ def main():
                         selected_sprite_3.rect[3]), width=5)
         if sprite_file_menu.visible:
             for i in range(len(get_files_list()[0])):
+                txt_surface = pygame.font.Font(None, 32).render(text_file_name, True, (255, 0, 0))
+                max_text_width = 150  # <- максимальная длинна текста !!!!
+
+                if txt_surface.get_width() >= max_text_width:
+                    for b in range(len(text_file_name)):
+                        txt_surface = pygame.font.Font(None, 32).render(text_file_name[0:b], True, (255, 0, 0))
+                        if txt_surface.get_width() >= max_text_width:
+                            text_file_name = text_file_name[0:b]
+                            break
                 screen.blit(pygame.font.Font(None, 32).render(get_files_list()[0][i], True, (255, 0, 0)),
                             (sprite_file_menu.rect.x + 20, sprite_file_menu.rect.y + 20 + (i * 20)))
 
