@@ -10,10 +10,11 @@ import shutil
 def create_file(name_file, start_option_1, start_option_2, start_option_3):
     # shutil.copy(os.path.join('starts_file', f'{start_option_1[7:-4]}.txt'), os.path.join("saves", name_file))
     file_game = open(os.path.join("saves", name_file), mode="w", encoding="utf-8")
-    file_game.write(f"file_name = {name_file} \n")
-    file_game.write(f"map_name = {start_option_1[7:-4]} \n")
+    file_game.write(f"file_name = {name_file}" + "\n")
+    file_game.write(f"map_name = {start_option_1[7:-4]}" + "\n")
     file_game.write(f"difficlt = {start_option_2[7:-4]} \n")
     file_game.write(f"leader = {start_option_3[7:-4]} \n")
+    file_game.write(f"time = 1.1.2030.00.00 \n")
     f = open(os.path.join('starts_file', f'{start_option_1[7:-4]}.txt'), 'r+', encoding="utf-8")
     sls = f.readlines()
     for i in sls:
@@ -21,10 +22,10 @@ def create_file(name_file, start_option_1, start_option_2, start_option_3):
     f.close()
     file_game.close()
     pygame.quit()
-    main()
+    main(name_file)
 
 
-def render():
+def render(file_name):
     os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (0, 30)
 
     pygame.init()
@@ -32,11 +33,11 @@ def render():
     clock = pygame.time.Clock()
     size_menu = 1536, 803
     screen_main = pygame.display.set_mode(size_menu)
-    file_reader()
-    # Kol = SpritesCreateForMap(100, 100, "Kol.png")
-    # spite_list_province = [Kol]
+
+    sprite_map_list = file_reader(file_name)[0]
+    file_info_list = file_reader(file_name)[1]
     group_visible_sprite = pygame.sprite.Group()
-    # group_visible_sprite.add(Kol)
+    group_visible_sprite.add(sprite_map_list[0])
 
     running_2 = True
     while running_2:
@@ -59,6 +60,6 @@ def render():
         pygame.display.update()
 
 
-def main():
-    render()
+def main(file_name):
+    render(file_name)
     pygame.quit()

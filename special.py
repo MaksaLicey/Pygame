@@ -7,7 +7,7 @@ from os import walk
 # вспомогательный файл с функциями и классами
 
 class SpriteCreate(pygame.sprite.Sprite):  # класс для создания спрайтов меню
-    def __init__(self, rect_x, rect_y, file_name, visible_s, fuction_s, promt):
+    def __init__(self, rect_x, rect_y, file_name, visible_s, fuction_s='', promt=''):
         super().__init__()
         # self.image = image
         self.image = load_image(file_name)
@@ -35,17 +35,6 @@ def load_image(name, colorkey=None):  # функция для загрузки �
     # else:
     #     image = image.convert_alpha()
     return image
-
-
-class SpritesCreateForMap(pygame.sprite.Sprite):  # создание спрайтов карты
-    def __init__(self, rect_x, rect_y, file_name):
-        super().__init__()
-        self.image_start = load_image(file_name)
-        self.image = change_color(self.image_start, (255, 0, 255))
-        self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = rect_x
-        self.rect.y = rect_y
 
 
 start_file = 0  # переменные для указания границ среза списка файлов из save
@@ -82,5 +71,39 @@ def change_color(image, color):
     return final_image
 
 
+class SpritesCreateForMap(pygame.sprite.Sprite):  # создание спрайтов карты
+    def __init__(self, id_province, name, rect_x, rect_y, file_name_img):
+        super().__init__()
+        self.image_start = load_image(file_name_img)
+        self.image = change_color(self.image_start, (255, 0, 255))
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.id_province = id_province
+        self.name = name
+        self.rect.x = rect_x
+        self.rect.y = rect_y
+
+
 def file_reader(file_name):
-    print(file_name)
+    file = open(os.path.join("saves", file_name), mode="r+", encoding="utf-8")
+    file_strings = file.readlines()
+    sls_for_sprite_info = []
+    sls_for_file_info = []
+    list_of_sprite = []
+
+    for string in range(len(file_strings)):
+        if string == 0:
+            while file_strings[string].split()[0] != "map(":
+                if file_strings[string].split()[0] != "map(":
+                    sls_for_file_info.append(file_strings[string].split()[2])
+                string += 1
+        if file_strings[string].split()[0] == "(":
+            while file_strings[string].split()[0] != ")":
+                string += 1
+                if file_strings[string].split()[0] != ")":
+                    sls_for_sprite_info.append(file_strings[string].split()[2])
+    list_of_sprite.append(
+        SpritesCreateForMap(sls_for_sprite_info[0], sls_for_sprite_info[1], int(sls_for_sprite_info[2]),
+                            int(sls_for_sprite_info[3]), sls_for_sprite_info[4]))
+    sls_for_sprite_info.clear()
+    return list_of_sprite, sls_for_file_info

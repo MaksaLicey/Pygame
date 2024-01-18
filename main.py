@@ -11,14 +11,13 @@ def main():
     text_file_name = ''
     # os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (0, 30)
 
-    sprite_play_btn = SpriteCreate(300, 30, "btn_GamePlay.png", True, 'open_start_menu', '')
+    sprite_play_btn = SpriteCreate(300, 30, "btn_GamePlay.png", True, 'open_start_menu')
     # спрайт кнопки начать новую игру, экземпляр класса SpriteCreate, из special.py
-    sprite_setting_menu = SpriteCreate(700, 160, "setting_menu.png", False, '', '')  # создаем спрайт кнопки начала игры
+    sprite_setting_menu = SpriteCreate(700, 160, "setting_menu.png", False)  # создаем спрайт кнопки начала игры
     sprite_open_setting = SpriteCreate(950, 30, "setting_btn_img.png", True, 'open_setting', '')
     sprite_btn1_setting = SpriteCreate(sprite_setting_menu.rect.x + 20, sprite_setting_menu.rect.y + 20,
-                                       "setting_btn_2.png", sprite_setting_menu.visible,
-                                       '', '')  # создаем спрайт кнопки 2
-    sprite_start_menu = SpriteCreate(100, 50, "start_menu.png", False, '', '')
+                                       "setting_btn_2.png", sprite_setting_menu.visible)  # создаем спрайт кнопки 2
+    sprite_start_menu = SpriteCreate(100, 50, "start_menu.png", False)
     sprite_start_afrika = SpriteCreate(sprite_start_menu.rect.x + 30, sprite_start_menu.rect.y + 70, "Afrika.png",
                                        False, 'selected_1', 'prompt_1.png')
     sprite_start_europe = SpriteCreate(sprite_start_menu.rect.x + 280, sprite_start_menu.rect.y + 70, "europe.png",
@@ -59,11 +58,11 @@ def main():
                                       False, 'selected_3', 'prompt_character_4.png')
     sprite_start_game = SpriteCreate(sprite_start_menu.rect.x + 350, sprite_start_menu.rect.y + 500,
                                      "btn_start_game.png",
-                                     False, 'open_list', '')
+                                     False, 'open_list')
 
     sprite_file_menu = SpriteCreate(sprite_start_menu.rect.x + 320, sprite_start_menu.rect.y + 180,
                                     "file_list.png",
-                                    False, '', '')
+                                    False)
     sprite_up_list = SpriteCreate(sprite_file_menu.rect.x + 20, sprite_file_menu.rect.y + 200,
                                   "up_list.png",
                                   False, 'up_list', '')
