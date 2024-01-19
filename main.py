@@ -195,7 +195,8 @@ def main():
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
-                clicked_sprites = [s for s in group_visible_sprite if s.rect.collidepoint(pos)]
+                clicked_sprites = [s for s in group_visible_sprite if s.rect.collidepoint(
+                    pos)]  # добавление спрайтов, на которых был курсор мыши во время нажатия
 
                 if len(clicked_sprites) > 0:
                     sprite_checker1()
@@ -206,7 +207,7 @@ def main():
                     else:
 
                         text_file_name += event.unicode
-                if event.key == pygame.K_ESCAPE and sprite_file_menu.visible:
+                if event.key == pygame.K_ESCAPE and sprite_file_menu.visible:  # закрытие меню создания файла на esc
                     list_file_menu()
 
         for sprit in menu_sprites:
@@ -244,9 +245,8 @@ def main():
         if sprite_file_menu.visible:
             for i in range(len(get_files_list()[0])):
                 txt_surface = pygame.font.Font(None, 32).render(text_file_name, True, (255, 0, 0))
-                max_text_width = 150  # <- максимальная длинна текста !!!!
-
-                if txt_surface.get_width() >= max_text_width:
+                max_text_width = 150  # максимальная длинна имени файла
+                if txt_surface.get_width() >= max_text_width:  # проверка длины текста
                     for b in range(len(text_file_name)):
                         txt_surface = pygame.font.Font(None, 32).render(text_file_name[0:b], True, (255, 0, 0))
                         if txt_surface.get_width() >= max_text_width:
@@ -258,7 +258,8 @@ def main():
         if event.type == pygame.MOUSEMOTION:
             pos = pygame.mouse.get_pos()
             clicked_sprites_2 = [s for s in group_visible_sprite if s.rect.collidepoint(pos)]
-            if len(clicked_sprites_2) > 0:
+            # добавление спрайтов, на которых попал курсор мыши в список
+            if len(clicked_sprites_2) > 0:  # ну и отображение подсказки, если таковая есть
                 if clicked_sprites_2[-1].prompt != '' and not sprite_file_menu.visible:
                     prompt_image = load_image(clicked_sprites_2[-1].prompt)
                     screen.blit(prompt_image, pos)

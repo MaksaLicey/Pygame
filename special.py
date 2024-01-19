@@ -4,7 +4,6 @@ import sys
 from os import walk
 
 
-
 # вспомогательный файл с функциями и классами
 
 class SpriteCreate(pygame.sprite.Sprite):  # класс для создания спрайтов меню
@@ -43,8 +42,8 @@ max_file_show = 7  # максимум позиций в списке файло�
 end_file = max_file_show  # необходимо, чтоб лист отображения файлов не вылез за меню
 
 
-def get_files_list(app=0):
-    global end_file
+def get_files_list(app=0):  # функция для получения списка файлов из
+    global end_file  # saves, длинной max_file_show
     global start_file
     global max_file_show
     show_list = []
@@ -63,7 +62,7 @@ def get_files_list(app=0):
         return show_list, full_list
 
 
-def change_color(image, color):
+def change_color(image, color):  # функция смены цвета спрайта
     coloured_image = pygame.Surface(image.get_size())
     coloured_image.fill(color)
 
@@ -85,26 +84,37 @@ class SpritesCreateForMap(pygame.sprite.Sprite):  # создание спрай�
         self.rect.y = rect_y
 
 
-def file_reader(file_name):
+def file_reader(file_name):  # чтение файла
     file = open(os.path.join("saves", file_name), mode="r+", encoding="utf-8")
     file_strings = file.readlines()
-    sls_for_sprite_info = []
-    sls_for_file_info = []
-    list_of_sprite = []
+    sls_for_sprite_info = []  # список параметров игры
+    sls_for_file_info = []  # список параметров спрайта, которые передаются в SpritesCreateForMap
+    list_of_sprite = []  # список спрайтов
+    # print(file_strings)
+    string_num = 0
+    while True:  # первые строки до map(...) парматеры игры
+        if string_num == 0:
+            while file_strings[string_num].split()[0] != "map(":
+                if file_strings[string_num].split()[0] != "map(":
+                    sls_for_file_info.append(file_strings[string_num].split()[2])
+                string_num += 1
+        print(string_num)
+        if file_strings[string_num].split()[0] == "(":  # каждый спрайт - отдельная провинция, со своими парметрами
+            # сама карта "рисуется" через файлы из папки starts_file
+            # каждому спрайта указываются все необходимые данные, помещаемые в (id = 0,...)
+            # id соответствует индексу спрайта в list_of_sprite
+            while file_strings[string_num].split()[0] != ")":
+                string_num += 1
+                if file_strings[string_num].split()[0] != ")":
+                    sls_for_sprite_info.append(file_strings[string_num].split()[2])  # добавления информации
+            list_of_sprite.append(
+                SpritesCreateForMap(sls_for_sprite_info[0], sls_for_sprite_info[1], int(sls_for_sprite_info[2]),
+                                    int(sls_for_sprite_info[3]), sls_for_sprite_info[4]))
+            sls_for_sprite_info.clear()
+        if len(file_strings) - 1 > string_num:
+            string_num += 1
+        else:
+            break
+    print(sls_for_sprite_info)
 
-    for string in range(len(file_strings)):
-        if string == 0:
-            while file_strings[string].split()[0] != "map(":
-                if file_strings[string].split()[0] != "map(":
-                    sls_for_file_info.append(file_strings[string].split()[2])
-                string += 1
-        if file_strings[string].split()[0] == "(":
-            while file_strings[string].split()[0] != ")":
-                string += 1
-                if file_strings[string].split()[0] != ")":
-                    sls_for_sprite_info.append(file_strings[string].split()[2])
-    list_of_sprite.append(
-        SpritesCreateForMap(sls_for_sprite_info[0], sls_for_sprite_info[1], int(sls_for_sprite_info[2]),
-                            int(sls_for_sprite_info[3]), sls_for_sprite_info[4]))
-    sls_for_sprite_info.clear()
     return list_of_sprite, sls_for_file_info

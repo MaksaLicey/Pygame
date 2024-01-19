@@ -7,17 +7,18 @@ import shutil
 
 # файл игры
 
-def create_file(name_file, start_option_1, start_option_2, start_option_3):
-    file_game = open(os.path.join("saves", name_file), mode="w", encoding="utf-8")
-    file_game.write(f"file_name = {name_file}" + "\n")
+def create_file(name_file, start_option_1, start_option_2, start_option_3):  # получаем параметры игры
+    file_game = open(os.path.join("saves", name_file), mode="w", encoding="utf-8")  # создаем новый файл
+    file_game.write(f"file_name = {name_file}" + "\n")  # записываем в него все стартовые параметры
     file_game.write(f"map_name = {start_option_1[7:-4]}" + "\n")
     file_game.write(f"difficlt = {start_option_2[7:-4]} \n")
     file_game.write(f"leader = {start_option_3[7:-4]} \n")
     file_game.write(f"time = 1.1.2030.00.00 \n")
     f = open(os.path.join('starts_file', f'{start_option_1[7:-4]}.txt'), 'r+', encoding="utf-8")
+    # открываем файл, в соответствии с выбранной картой
     sls = f.readlines()
     for i in sls:
-        file_game.write(i)
+        file_game.write(i)  # переписываем его содержимое в недавно созданный файл
     f.close()
     file_game.close()
     pygame.quit()
@@ -34,9 +35,12 @@ def render(file_name):
     screen_main = pygame.display.set_mode(size_menu)
 
     sprite_map_list = file_reader(file_name)[0]
+    print(file_reader(file_name))
+    print(len(sprite_map_list))
     file_info_list = file_reader(file_name)[1]
     group_visible_sprite = pygame.sprite.Group()
-    group_visible_sprite.add(sprite_map_list[0])
+    for sprite_ in sprite_map_list:
+        group_visible_sprite.add(sprite_)
 
     running_2 = True
     while running_2:

@@ -8,9 +8,9 @@ map(
     color = 255 0 0
     )
     (
-    id = 0
-    name = Columbia
-    pos_x = 100
+    id = 1
+    name = Columbia_2
+    pos_x = 200
     pos_y = 100
     image = Kol.png
     color = 255 0 0
