@@ -71,50 +71,73 @@ def change_color(image, color):  # функция смены цвета спра
     return final_image
 
 
+class Countries():
+    def __init__(self, name, color):
+        self.name = name
+        self.color = color
+        self.control_id = []
+
+
 class SpritesCreateForMap(pygame.sprite.Sprite):  # создание спрайтов карты
-    def __init__(self, id_province, name, rect_x, rect_y, file_name_img):
+    def __init__(self, id_province, name, rect_x, rect_y, file_name_img, holder, color):
         super().__init__()
         self.image_start = load_image(file_name_img)
-        self.image = change_color(self.image_start, (255, 0, 255))
+        self.color = (int(color[0]), int(color[1]), int(color[2]))
+        self.image = change_color(self.image_start, self.color)
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.id_province = id_province
         self.name = name
         self.rect.x = rect_x
         self.rect.y = rect_y
+        self.holder = holder
 
 
 def file_reader(file_name):  # чтение файла
+    color = ''
     file = open(os.path.join("saves", file_name), mode="r+", encoding="utf-8")
     file_strings = file.readlines()
     sls_for_sprite_info = []  # список параметров игры
     sls_for_file_info = []  # список параметров спрайта, которые передаются в SpritesCreateForMap
     list_of_sprite = []  # список спрайтов
+    list_of_holders, holder_info_list = [], []
     # print(file_strings)
     string_num = 0
-    while True:  # первые строки до map(...) парматеры игры
-        if string_num == 0:
-            while file_strings[string_num].split()[0] != "map(":
-                if file_strings[string_num].split()[0] != "map(":
-                    sls_for_file_info.append(file_strings[string_num].split()[2])
-                string_num += 1
-        print(string_num)
-        if file_strings[string_num].split()[0] == "(":  # каждый спрайт - отдельная провинция, со своими парметрами
+    # первые строки до map(...) параметеры игры
+    while file_strings[string_num].split()[0] != "holder(":
+        sls_for_file_info.append(file_strings[string_num].split()[2])
+        string_num += 1
+    string_num += 1
+    while file_strings[string_num].split()[0] != ")":
+        if file_strings[string_num].split()[0] != '|' and file_strings[string_num].split()[0] != ')':
+            holder_info_list.append(file_strings[string_num].split()[2])
+        else:
+            list_of_holders.append(Countries(holder_info_list[0], holder_info_list[1]))
+            holder_info_list.clear()
+        string_num += 1
+    string_num += 2
+    while True:
+        if file_strings[string_num].split()[0] == "(":  # каждый спрайт - отдельная провинция, со своими параметрами
             # сама карта "рисуется" через файлы из папки starts_file
             # каждому спрайта указываются все необходимые данные, помещаемые в (id = 0,...)
             # id соответствует индексу спрайта в list_of_sprite
             while file_strings[string_num].split()[0] != ")":
                 string_num += 1
                 if file_strings[string_num].split()[0] != ")":
-                    sls_for_sprite_info.append(file_strings[string_num].split()[2])  # добавления информации
-            list_of_sprite.append(
+                    sls_for_sprite_info.append(file_strings[string_num].split()[2])  # добавления спрайта и в список
+            for i in list_of_holders:  # изменение цвета в соответствии с цветом страны
+                if sls_for_sprite_info[5] == i.name:
+                    color = i.color.split('.')
+                    i.control_id.append(sls_for_sprite_info[0])
+                else:
+                    if sls_for_sprite_info[0] in i.control_id:
+                        i.control_id.remove(sls_for_sprite_info[0])
+            list_of_sprite.append(  # добавление спрайта - провинции в список
                 SpritesCreateForMap(sls_for_sprite_info[0], sls_for_sprite_info[1], int(sls_for_sprite_info[2]),
-                                    int(sls_for_sprite_info[3]), sls_for_sprite_info[4]))
+                                    int(sls_for_sprite_info[3]), sls_for_sprite_info[4], sls_for_sprite_info[5], color))
             sls_for_sprite_info.clear()
-        if len(file_strings) - 1 > string_num:
+        if file_strings[string_num].split()[0] != "end":
             string_num += 1
         else:
             break
-    print(sls_for_sprite_info)
-
-    return list_of_sprite, sls_for_file_info
+    return list_of_sprite, sls_for_file_info, list_of_holders

@@ -35,9 +35,8 @@ def render(file_name):
     screen_main = pygame.display.set_mode(size_menu)
 
     sprite_map_list = file_reader(file_name)[0]
-    print(file_reader(file_name))
-    print(len(sprite_map_list))
     file_info_list = file_reader(file_name)[1]
+    country_list = file_reader(file_name)[2]
     group_visible_sprite = pygame.sprite.Group()
     for sprite_ in sprite_map_list:
         group_visible_sprite.add(sprite_)
@@ -54,11 +53,12 @@ def render(file_name):
                     running_2 = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pass
-                # for sprit in spite_list_province:
-                #     pos_in_mask = event.pos[0] - sprit.rect.x, event.pos[1] - sprit.rect.y
-                #     if sprit.rect.collidepoint(event.pos) and sprit.mask.get_at(pos_in_mask):
-                #         sprit.image = change_color(sprit.image_start,
-                #                                   (random.randrange(0, 255), random.randrange(0, 255), 0))
+                for sprit in sprite_map_list:
+                    pos_in_mask = event.pos[0] - sprit.rect.x, event.pos[1] - sprit.rect.y
+                    if sprit.rect.collidepoint(event.pos) and sprit.mask.get_at(pos_in_mask):
+                        print(sprit.color)
+                        print(country_list[0].control_id)
+
         group_visible_sprite.draw(screen_main)
         pygame.display.update()
 
