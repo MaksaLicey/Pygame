@@ -1,8 +1,7 @@
 from special import *
-from pygame import *
 import os
 import random
-import shutil
+# import shutil
 
 
 # файл игры
@@ -34,9 +33,11 @@ def render(file_name):
     size_menu = 1536, 803
     screen_main = pygame.display.set_mode(size_menu)
 
-    sprite_map_list = file_reader(file_name)[0]
-    file_info_list = file_reader(file_name)[1]
-    country_list = file_reader(file_name)[2]
+    info_list_from_file = file_reader(file_name)
+
+    sprite_map_list = info_list_from_file[0]
+    file_info_list = info_list_from_file[1]
+    country_list = info_list_from_file[2]
     group_visible_sprite = pygame.sprite.Group()
     for sprite_ in sprite_map_list:
         group_visible_sprite.add(sprite_)
@@ -52,12 +53,27 @@ def render(file_name):
                 if event.key == pygame.K_a:
                     running_2 = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                pass
                 for sprit in sprite_map_list:
                     pos_in_mask = event.pos[0] - sprit.rect.x, event.pos[1] - sprit.rect.y
                     if sprit.rect.collidepoint(event.pos) and sprit.mask.get_at(pos_in_mask):
-                        print(sprit.color)
-                        print(country_list[0].control_id)
+                        ran = random.randrange(0, 3)
+                        sprit.holder = country_list[ran].name
+                        sprit.update(country_list[ran].color.split("."))
+                        print(sprit.holder, sprit.color)
+                        # print(sprit.color, sprit.holder)
+                        # sprit = SpritesCreateForMap(sprit.id_province, sprit.name, sprit.rect.x, sprit.rect.y,
+                        #                             sprit.file_name_img, country_list[2].name,
+                        #                             country_list[2].color.split('.'))
+                        # print(sprit.color)
+                        for country in country_list:
+                            if sprit.holder == country.name:
+                                if not(sprit.id_province in country.control_id):
+                                    country.control_id.append(sprit.id_province)
+                            else:
+                                if sprit.id_province in country.control_id:
+                                    country.control_id.remove(sprit.id_province)
+                        for i in country_list:
+                            print(i.control_id)
 
         group_visible_sprite.draw(screen_main)
         pygame.display.update()

@@ -6,10 +6,9 @@ from os import walk
 
 # вспомогательный файл с функциями и классами
 
-class SpriteCreate(pygame.sprite.Sprite):  # класс для создания спрайтов меню
+class MenySpriteCreate(pygame.sprite.Sprite):  # класс для создания спрайтов меню
     def __init__(self, rect_x, rect_y, file_name, visible_s, fuction_s='', promt=''):
         super().__init__()
-        # self.image = image
         self.image = load_image(file_name)
         self.size = load_image(file_name).get_size()
         self.rect = self.image.get_rect()
@@ -17,7 +16,7 @@ class SpriteCreate(pygame.sprite.Sprite):  # класс для создания 
         self.rect.y = rect_y
         self.visible = visible_s
         self.function = fuction_s
-        self.prompt = promt  # название файла из data, который должен высветиться при наведении
+        self.prompt = promt  # название картинки из data, которая должна высветиться при наведении
         #  курсором на спрайт, если подсказка не нужна передать ''
 
 
@@ -47,7 +46,6 @@ def get_files_list(app=0):  # функция для получения спис�
     global start_file
     global max_file_show
     show_list = []
-    # print(start_file, end_file)
     for (dirpath, dirnames, filenames) in walk("saves"):
         show_list.extend(filenames)
         break
@@ -71,26 +69,31 @@ def change_color(image, color):  # функция смены цвета спра
     return final_image
 
 
-class Countries():
+class Countries():  # класс владельцев провинций
     def __init__(self, name, color):
         self.name = name
         self.color = color
         self.control_id = []
 
 
-class SpritesCreateForMap(pygame.sprite.Sprite):  # создание спрайтов карты
+class SpritesCreateForMap(pygame.sprite.Sprite):  # класс для создания спрайтов карты
     def __init__(self, id_province, name, rect_x, rect_y, file_name_img, holder, color):
         super().__init__()
-        self.image_start = load_image(file_name_img)
-        self.color = (int(color[0]), int(color[1]), int(color[2]))
-        self.image = change_color(self.image_start, self.color)
+        self.update = self.update  # функция для обновления цвета
+        self.id_province = id_province  # номер клетки
+        self.name = name  # имя провинции
+        self.image_start = load_image(file_name_img)  # сохранения первоначального изображения
+        self.color = (int(color[0]), int(color[1]), int(color[2]))  # цвет, полученный от текущего владельца
+        self.image = change_color(self.image_start, self.color)  # задание цвета (нужно только во время создания)
         self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
-        self.id_province = id_province
-        self.name = name
+        self.mask = pygame.mask.from_surface(self.image)  # маска спрайта
         self.rect.x = rect_x
         self.rect.y = rect_y
-        self.holder = holder
+        self.holder = holder  # имя текущего владельца
+
+    def update(self, color):
+        self.color = (int(color[0]), int(color[1]), int(color[2]))
+        self.image = change_color(self.image_start, self.color)
 
 
 def file_reader(file_name):  # чтение файла
@@ -98,17 +101,19 @@ def file_reader(file_name):  # чтение файла
     file = open(os.path.join("saves", file_name), mode="r+", encoding="utf-8")
     file_strings = file.readlines()
     sls_for_sprite_info = []  # список параметров игры
-    sls_for_file_info = []  # список параметров спрайта, которые передаются в SpritesCreateForMap
-    list_of_sprite = []  # список спрайтов
-    list_of_holders, holder_info_list = [], []
-    # print(file_strings)
-    string_num = 0
-    # первые строки до map(...) параметеры игры
-    while file_strings[string_num].split()[0] != "holder(":
-        sls_for_file_info.append(file_strings[string_num].split()[2])
+    sls_for_file_info, list_of_sprite = [], []  # список параметров читаемого спрайта, которые передаются
+    # в SpritesCreateForMap и лист для самих спрайтов соответственно
+    holder_info_list, list_of_holders = [], []  # список для информации о читаемом владельце и список
+    # всех владельцев соответственно
+    string_num = 0  # номер читаемой строки
+    # Т.к. класс SpritesCreateForMap и Countries никак не связаны, каждый, что определить
+
+    while file_strings[string_num].split()[0] != "holder(":  # чтение информации об игре (все строки до "holder(")
+        sls_for_file_info.append(file_strings[string_num].split()[2])  # чтобы потом обратиться к какому-либо
+        # параметру необходимо знать его индекс в списке (просто в файле посмотреть номер строки)
         string_num += 1
     string_num += 1
-    while file_strings[string_num].split()[0] != ")":
+    while file_strings[string_num].split()[0] != ")":  # чтение владельцев и информации о них
         if file_strings[string_num].split()[0] != '|' and file_strings[string_num].split()[0] != ')':
             holder_info_list.append(file_strings[string_num].split()[2])
         else:
@@ -116,11 +121,9 @@ def file_reader(file_name):  # чтение файла
             holder_info_list.clear()
         string_num += 1
     string_num += 2
-    while True:
+    while True:  #
         if file_strings[string_num].split()[0] == "(":  # каждый спрайт - отдельная провинция, со своими параметрами
-            # сама карта "рисуется" через файлы из папки starts_file
             # каждому спрайта указываются все необходимые данные, помещаемые в (id = 0,...)
-            # id соответствует индексу спрайта в list_of_sprite
             while file_strings[string_num].split()[0] != ")":
                 string_num += 1
                 if file_strings[string_num].split()[0] != ")":
@@ -140,4 +143,6 @@ def file_reader(file_name):  # чтение файла
             string_num += 1
         else:
             break
-    return list_of_sprite, sls_for_file_info, list_of_holders
+    file.close()
+    list_for_return = [list_of_sprite, sls_for_file_info, list_of_holders]
+    return list_for_return

@@ -1,6 +1,6 @@
 holder(
        name = Columbia
-       color = 0.255.255
+       color = 20.255.20
        |
        name = Columbia_2
        color = 255.0.0
@@ -15,7 +15,7 @@ map(
         name = Columbia
         pos_x = 10
         pos_y = 10
-        image = Kol_2.png
+        image = Kol.png
         holder = Columbia_2
     )
         (
@@ -32,7 +32,7 @@ map(
         pos_x = 200
         pos_y = 200
         image = Kol.png
-        holder = Columbia_3
+        holder = Columbia_2
     )
 )
 end

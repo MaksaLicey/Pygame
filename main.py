@@ -1,7 +1,9 @@
 from Main_Game_File import *
 from special import *
-import sdl2
-import ctypes
+
+
+# import sdl2
+# import ctypes
 
 
 # файл для работы с меню
@@ -11,74 +13,75 @@ def main():
     text_file_name = ''
     # os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (0, 30)
 
-    sprite_play_btn = SpriteCreate(300, 30, "btn_GamePlay.png", True, 'open_start_menu')
+    sprite_play_btn = MenySpriteCreate(300, 30, "btn_GamePlay.png", True, 'open_start_menu')
     # спрайт кнопки начать новую игру, экземпляр класса SpriteCreate, из special.py
-    sprite_setting_menu = SpriteCreate(700, 160, "setting_menu.png", False)  # создаем спрайт кнопки начала игры
-    sprite_open_setting = SpriteCreate(950, 30, "setting_btn_img.png", True, 'open_setting', '')
-    sprite_btn1_setting = SpriteCreate(sprite_setting_menu.rect.x + 20, sprite_setting_menu.rect.y + 20,
-                                       "setting_btn_2.png", sprite_setting_menu.visible)  # создаем спрайт кнопки 2
-    sprite_start_menu = SpriteCreate(100, 50, "start_menu.png", False)
-    sprite_start_afrika = SpriteCreate(sprite_start_menu.rect.x + 30, sprite_start_menu.rect.y + 70, "Afrika.png",
-                                       False, 'selected_1', 'prompt_1.png')
-    sprite_start_europe = SpriteCreate(sprite_start_menu.rect.x + 280, sprite_start_menu.rect.y + 70, "europe.png",
-                                       False, 'selected_1', 'prompt_1.png')
+    sprite_setting_menu = MenySpriteCreate(700, 160, "setting_menu.png", False)  # создаем спрайт кнопки начала игры
+    sprite_open_setting = MenySpriteCreate(950, 30, "setting_btn_img.png", True, 'open_setting', '')
+    sprite_btn1_setting = MenySpriteCreate(sprite_setting_menu.rect.x + 20, sprite_setting_menu.rect.y + 20,
+                                           "setting_btn_2.png", sprite_setting_menu.visible)  # создаем спрайт кнопки 2
+    sprite_start_menu = MenySpriteCreate(100, 50, "start_menu.png", False)
+    sprite_start_afrika = MenySpriteCreate(sprite_start_menu.rect.x + 30, sprite_start_menu.rect.y + 70, "Afrika.png",
+                                           False, 'selected_1', 'prompt_1.png')
+    sprite_start_europe = MenySpriteCreate(sprite_start_menu.rect.x + 280, sprite_start_menu.rect.y + 70, "europe.png",
+                                           False, 'selected_1', 'prompt_1.png')
 
-    sprite_start_latina = SpriteCreate(sprite_start_menu.rect.x + 490, sprite_start_menu.rect.y + 70, "Latina.png",
-                                       False, 'selected_1', 'prompt_latina.png')
+    sprite_start_latina = MenySpriteCreate(sprite_start_menu.rect.x + 490, sprite_start_menu.rect.y + 70, "Latina.png",
+                                           False, 'selected_1', 'prompt_latina.png')
 
-    sprite_start_america = SpriteCreate(sprite_start_menu.rect.x + 650, sprite_start_menu.rect.y + 60, "America.png",
-                                        False, 'selected_1', 'prompt_1.png')
+    sprite_start_america = MenySpriteCreate(sprite_start_menu.rect.x + 650, sprite_start_menu.rect.y + 60,
+                                            "America.png",
+                                            False, 'selected_1', 'prompt_1.png')
 
-    sprite_game_diff_1 = SpriteCreate(sprite_start_menu.rect.x + 70, sprite_start_menu.rect.y + 320,
-                                      "game_difficutly_1.png",
-                                      False, 'selected_2', 'prompt_difficutly_1.png')
+    sprite_game_diff_1 = MenySpriteCreate(sprite_start_menu.rect.x + 70, sprite_start_menu.rect.y + 320,
+                                          "game_difficutly_1.png",
+                                          False, 'selected_2', 'prompt_difficutly_1.png')
     # sprite_game_diff_1, sprite_game_diff_2... спрайты кнопок выбора сложности
-    sprite_game_diff_2 = SpriteCreate(sprite_start_menu.rect.x + 270, sprite_start_menu.rect.y + 320,
-                                      "game_difficutly_2.png",
-                                      False, 'selected_2', 'prompt_difficutly_2.png')
-    sprite_game_diff_3 = SpriteCreate(sprite_start_menu.rect.x + 470, sprite_start_menu.rect.y + 320,
-                                      "game_difficutly_3.png",
-                                      False, 'selected_2', 'prompt_difficutly_3.png')
-    sprite_game_diff_4 = SpriteCreate(sprite_start_menu.rect.x + 670, sprite_start_menu.rect.y + 320,
-                                      "game_difficutly_4.png",
-                                      False, 'selected_2', 'prompt_difficutly_4.png')
+    sprite_game_diff_2 = MenySpriteCreate(sprite_start_menu.rect.x + 270, sprite_start_menu.rect.y + 320,
+                                          "game_difficutly_2.png",
+                                          False, 'selected_2', 'prompt_difficutly_2.png')
+    sprite_game_diff_3 = MenySpriteCreate(sprite_start_menu.rect.x + 470, sprite_start_menu.rect.y + 320,
+                                          "game_difficutly_3.png",
+                                          False, 'selected_2', 'prompt_difficutly_3.png')
+    sprite_game_diff_4 = MenySpriteCreate(sprite_start_menu.rect.x + 670, sprite_start_menu.rect.y + 320,
+                                          "game_difficutly_4.png",
+                                          False, 'selected_2', 'prompt_difficutly_4.png')
 
-    sprite_character_1 = SpriteCreate(sprite_start_menu.rect.x + 100, sprite_start_menu.rect.y + 400,
-                                      "character_1.png",
-                                      False, 'selected_3', 'prompt_character_1.png')
+    sprite_character_1 = MenySpriteCreate(sprite_start_menu.rect.x + 100, sprite_start_menu.rect.y + 400,
+                                          "character_1.png",
+                                          False, 'selected_3', 'prompt_character_1.png')
     # sprite_character_1, ... спрайты кнопок выбора лидера
-    sprite_character_2 = SpriteCreate(sprite_start_menu.rect.x + 300, sprite_start_menu.rect.y + 400,
-                                      "character_2.png",
-                                      False, 'selected_3', 'prompt_character_2.png')
-    sprite_character_3 = SpriteCreate(sprite_start_menu.rect.x + 500, sprite_start_menu.rect.y + 400,
-                                      "character_3.png",
-                                      False, 'selected_3', 'prompt_character_3.png')
-    sprite_character_4 = SpriteCreate(sprite_start_menu.rect.x + 700, sprite_start_menu.rect.y + 400,
-                                      "character_4.png",
-                                      False, 'selected_3', 'prompt_character_4.png')
-    sprite_start_game = SpriteCreate(sprite_start_menu.rect.x + 350, sprite_start_menu.rect.y + 500,
-                                     "btn_start_game.png",
-                                     False, 'open_list')
+    sprite_character_2 = MenySpriteCreate(sprite_start_menu.rect.x + 300, sprite_start_menu.rect.y + 400,
+                                          "character_2.png",
+                                          False, 'selected_3', 'prompt_character_2.png')
+    sprite_character_3 = MenySpriteCreate(sprite_start_menu.rect.x + 500, sprite_start_menu.rect.y + 400,
+                                          "character_3.png",
+                                          False, 'selected_3', 'prompt_character_3.png')
+    sprite_character_4 = MenySpriteCreate(sprite_start_menu.rect.x + 700, sprite_start_menu.rect.y + 400,
+                                          "character_4.png",
+                                          False, 'selected_3', 'prompt_character_4.png')
+    sprite_start_game = MenySpriteCreate(sprite_start_menu.rect.x + 350, sprite_start_menu.rect.y + 500,
+                                         "btn_start_game.png",
+                                         False, 'open_list')
 
-    sprite_file_menu = SpriteCreate(sprite_start_menu.rect.x + 320, sprite_start_menu.rect.y + 180,
-                                    "file_list.png",
-                                    False)
-    sprite_up_list = SpriteCreate(sprite_file_menu.rect.x + 20, sprite_file_menu.rect.y + 200,
-                                  "up_list.png",
-                                  False, 'up_list', '')
-    sprite_down_list = SpriteCreate(sprite_file_menu.rect.x + 60, sprite_file_menu.rect.y + 200,
-                                    "down_list.png",
-                                    False, 'down_list', '')
-    sprite_input_name_file = SpriteCreate(sprite_file_menu.rect.x + 20, sprite_file_menu.rect.y + 240,
-                                          "input_name_file.png",
-                                          False, 'start_input_file_name', '')
-    sprite_crete_file = SpriteCreate(sprite_file_menu.rect.x + 30, sprite_file_menu.rect.y + 290,
-                                     "create_file.png",
-                                     False, 'create_file_and_start', '')
+    sprite_file_menu = MenySpriteCreate(sprite_start_menu.rect.x + 320, sprite_start_menu.rect.y + 180,
+                                        "file_list.png",
+                                        False)
+    sprite_up_list = MenySpriteCreate(sprite_file_menu.rect.x + 20, sprite_file_menu.rect.y + 200,
+                                      "up_list.png",
+                                      False, 'up_list', '')
+    sprite_down_list = MenySpriteCreate(sprite_file_menu.rect.x + 60, sprite_file_menu.rect.y + 200,
+                                        "down_list.png",
+                                        False, 'down_list', '')
+    sprite_input_name_file = MenySpriteCreate(sprite_file_menu.rect.x + 20, sprite_file_menu.rect.y + 240,
+                                              "input_name_file.png",
+                                              False, 'start_input_file_name', '')
+    sprite_crete_file = MenySpriteCreate(sprite_file_menu.rect.x + 30, sprite_file_menu.rect.y + 290,
+                                         "create_file.png",
+                                         False, 'create_file_and_start', '')
 
-    sprite_file_name_mistake = SpriteCreate(sprite_file_menu.rect.x - 100, sprite_file_menu.rect.y - 140,
-                                            "file_name_mistake.png",
-                                            False, 'file_name_mistake', '')
+    sprite_file_name_mistake = MenySpriteCreate(sprite_file_menu.rect.x - 100, sprite_file_menu.rect.y - 140,
+                                                "file_name_mistake.png",
+                                                False, 'file_name_mistake', '')
 
     # список спрайтов меню (в последующем не изменяется)
     menu_sprites = [sprite_play_btn, sprite_setting_menu, sprite_open_setting, sprite_btn1_setting, sprite_start_menu,
@@ -105,10 +108,10 @@ def main():
             sprite_file_name_mistake.visible = sprite_file_menu.visible
 
     def sprite_checker1():  # функция обработки нажатия на спрайты меню (не смотреть!!!)
-        global selected
-        global selected_2
+        global selected  # может быть True/False, в зависимости выбран ли параметр из первой строчки
+        global selected_2  # по аналогии с первым
         global selected_3
-        global selected_sprite_1
+        global selected_sprite_1  # копия выделенного спрайта
         global selected_sprite_2
         global selected_sprite_3
         global text_input_active
@@ -190,24 +193,23 @@ def main():
     while running:  # основной цикл игры
         clock.tick(60)
         events = pygame.event.get()
-        for event in events:
-            if event.type == pygame.QUIT:
+        for EVENT in events:
+            if EVENT.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if EVENT.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 clicked_sprites = [s for s in group_visible_sprite if s.rect.collidepoint(
                     pos)]  # добавление спрайтов, на которых был курсор мыши во время нажатия
-
                 if len(clicked_sprites) > 0:
                     sprite_checker1()
-            if event.type == pygame.KEYDOWN:
+            if EVENT.type == pygame.KEYDOWN:
                 if text_input_active:  # ввод названия файла
-                    if event.key == pygame.K_BACKSPACE:
+                    if EVENT.key == pygame.K_BACKSPACE:
                         text_file_name = text_file_name[:-1]
                     else:
-
-                        text_file_name += event.unicode
-                if event.key == pygame.K_ESCAPE and sprite_file_menu.visible:  # закрытие меню создания файла на esc
+                        if EVENT.unicode != '\r':
+                            text_file_name += EVENT.unicode
+                if EVENT.key == pygame.K_ESCAPE and sprite_file_menu.visible:  # закрытие меню создания файла на esc
                     list_file_menu()
 
         for sprit in menu_sprites:
@@ -216,7 +218,8 @@ def main():
             else:
                 if sprit in group_visible_sprite:
                     group_visible_sprite.remove(sprit)
-
+        if not running:  # иногда окно уже закрыто, а цикл не завершен
+            break
         screen.blit(image_for_menu, (0, 0))
         group_visible_sprite.draw(screen)  # отображение видимых спрайтов
 
@@ -255,7 +258,7 @@ def main():
                 screen.blit(pygame.font.Font(None, 32).render(get_files_list()[0][i], True, (255, 0, 0)),
                             (sprite_file_menu.rect.x + 20, sprite_file_menu.rect.y + 20 + (i * 20)))
 
-        if event.type == pygame.MOUSEMOTION:
+        if EVENT.type == pygame.MOUSEMOTION:
             pos = pygame.mouse.get_pos()
             clicked_sprites_2 = [s for s in group_visible_sprite if s.rect.collidepoint(pos)]
             # добавление спрайтов, на которых попал курсор мыши в список
