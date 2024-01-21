@@ -32,6 +32,9 @@ def render(file_name):
     clock = pygame.time.Clock()
     size_menu = 1536, 803
     screen_main = pygame.display.set_mode(size_menu)
+    image_for_icon = load_image("icon_for_game.png")  # изображение для иконки приложения
+    pygame.display.set_icon(image_for_icon)
+    pygame.display.set_caption('The final strike')  # название приложения
 
     info_list_from_file = file_reader(file_name)
 
@@ -56,10 +59,10 @@ def render(file_name):
                 for sprit in sprite_map_list:
                     pos_in_mask = event.pos[0] - sprit.rect.x, event.pos[1] - sprit.rect.y
                     if sprit.rect.collidepoint(event.pos) and sprit.mask.get_at(pos_in_mask):
-                        ran = random.randrange(0, 3)
+                        ran = random.randrange(0, 2)
                         sprit.holder = country_list[ran].name
                         sprit.update(country_list[ran].color.split("."))
-                        print(sprit.holder, sprit.color)
+                        # print(sprit.holder, sprit.color)
                         # print(sprit.color, sprit.holder)
                         # sprit = SpritesCreateForMap(sprit.id_province, sprit.name, sprit.rect.x, sprit.rect.y,
                         #                             sprit.file_name_img, country_list[2].name,
@@ -73,7 +76,7 @@ def render(file_name):
                                 if sprit.id_province in country.control_id:
                                     country.control_id.remove(sprit.id_province)
                         for i in country_list:
-                            print(i.control_id)
+                            print(i.army)
 
         group_visible_sprite.draw(screen_main)
         pygame.display.update()
