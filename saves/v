@@ -1,3 +1,8 @@
+file_name = v
+map_name = latina
+difficlt = difficutly_2 
+leader = character_2 
+time = 1.1.2030.00.00 
 holder(
        name = Columbia
        color = 20.255.20

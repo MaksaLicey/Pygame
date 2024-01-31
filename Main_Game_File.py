@@ -1,6 +1,10 @@
 from special import *
 import os
-import random
+
+
+# import random
+
+
 # import shutil
 
 
@@ -36,14 +40,47 @@ def render(file_name):
     pygame.display.set_icon(image_for_icon)
     pygame.display.set_caption('The final strike')  # название приложения
 
-    info_list_from_file = file_reader(file_name)
+    sprite_province_info = GameSprite(500, 10, "province_info.png", False, "open_region_info")
 
+    sprites_list = [sprite_province_info]
+    group_visible_sprite_1 = pygame.sprite.Group()
+
+    info_list_from_file = file_reader(file_name)  # получение информации из файла
     sprite_map_list = info_list_from_file[0]
     file_info_list = info_list_from_file[1]
     country_list = info_list_from_file[2]
-    group_visible_sprite = pygame.sprite.Group()
-    for sprite_ in sprite_map_list:
-        group_visible_sprite.add(sprite_)
+    group_map_sprite = pygame.sprite.Group()
+
+    selected_map_sprite = sprite_map_list[0]  # выделенный спрайт (чтоб не создавать новый спрайт, просто в начале
+
+    # присвоил любой первый экземпляр SpritesCreateForMap из sprite_map_list)
+
+    def open_sprite_list(flag, sprite=''):  # функция для смены видимости окна
+        # информации о регионе, если передать True и экземпляр нажатого класса SpritesCreateForMap
+        global selected_map_sprite
+        if flag:
+            if sprite != '' and sprite_province_info.visible and selected_map_sprite != sprite:
+                selected_map_sprite = sprite
+            else:
+                selected_map_sprite = sprite
+                sprite_province_info.visible = not sprite_province_info.visible
+        else:
+            if sprite_province_info.visible:
+                group_visible_sprite_1.add(sprite_province_info)
+                group_visible_sprite_1.draw(screen_main)
+                screen_main.blit(pygame.font.Font(None, 32).render(selected_map_sprite.name, True, (255, 0, 0)),
+                                 (100, 100))
+            elif not sprite_province_info.visible and sprite_province_info in group_visible_sprite_1:
+                group_visible_sprite_1.remove(group_visible_sprite_1)
+
+    functions = {
+        # наконец решил оформить код, исполняемый при нажатии
+        # на спрайт в отдельные функции и поместить их в список...
+        "open_region_info": open_sprite_list
+    }
+
+    for sprite_ in sprite_map_list:  # добавление всех спрайтов карты в группу group_map_sprite
+        group_map_sprite.add(sprite_)
 
     running_2 = True
     while running_2:
@@ -59,26 +96,16 @@ def render(file_name):
                 for sprit in sprite_map_list:
                     pos_in_mask = event.pos[0] - sprit.rect.x, event.pos[1] - sprit.rect.y
                     if sprit.rect.collidepoint(event.pos) and sprit.mask.get_at(pos_in_mask):
-                        ran = random.randrange(0, 2)
-                        sprit.holder = country_list[ran].name
-                        sprit.update(country_list[ran].color.split("."))
-                        # print(sprit.holder, sprit.color)
-                        # print(sprit.color, sprit.holder)
-                        # sprit = SpritesCreateForMap(sprit.id_province, sprit.name, sprit.rect.x, sprit.rect.y,
-                        #                             sprit.file_name_img, country_list[2].name,
-                        #                             country_list[2].color.split('.'))
-                        # print(sprit.color)
-                        for country in country_list:
-                            if sprit.holder == country.name:
-                                if not(sprit.id_province in country.control_id):
-                                    country.control_id.append(sprit.id_province)
-                            else:
-                                if sprit.id_province in country.control_id:
-                                    country.control_id.remove(sprit.id_province)
-                        for i in country_list:
-                            print(i.army)
-
-        group_visible_sprite.draw(screen_main)
+                        if pygame.mouse.get_pressed()[0]:  # проверка, что была нажата левая клавиша мыши
+                            l = functions[sprit.function]  # вызов функции по атрибуту function
+                            l(True, sprit)  # который передается как ключ в словарь функций functions
+                for sprite in sprites_list:
+                    if sprite.rect.collidepoint(event.pos):
+                        pass
+        pygame.draw.rect(screen_main, (0, 0, 0),
+                         (0, 0, size_menu[0], size_menu[1]))  # (временно) заполнение экрана черным фоном
+        group_map_sprite.draw(screen_main)
+        open_sprite_list(False)
         pygame.display.update()
 
 

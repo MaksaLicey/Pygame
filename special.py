@@ -6,19 +6,6 @@ from os import walk
 
 # вспомогательный файл с функциями и классами
 
-class MenySpriteCreate(pygame.sprite.Sprite):  # класс для создания спрайтов меню
-    def __init__(self, rect_x, rect_y, file_name, visible_s, fuction_s='', promt=''):
-        super().__init__()
-        self.image = load_image(file_name)
-        self.size = load_image(file_name).get_size()
-        self.rect = self.image.get_rect()
-        self.rect.x = rect_x
-        self.rect.y = rect_y
-        self.visible = visible_s
-        self.function = fuction_s
-        self.prompt = promt  # название картинки из data, которая должна высветиться при наведении
-        #  курсором на спрайт, если подсказка не нужна передать ''
-
 
 def load_image(name, colorkey=None):  # функция для загрузки изображений
     fullname = os.path.join('data', name)
@@ -68,16 +55,47 @@ def change_color(image, color):  # функция смены цвета спра
     return final_image
 
 
+class MenySpriteCreate(pygame.sprite.Sprite):  # класс для создания спрайтов меню
+    def __init__(self, rect_x, rect_y, file_name, visible_s, fuction_s='', promt=''):
+        super().__init__()
+        self.image = load_image(file_name)
+        self.size = load_image(file_name).get_size()
+        self.rect = self.image.get_rect()
+        self.rect.x = rect_x
+        self.rect.y = rect_y
+        self.visible = visible_s
+        self.function = fuction_s
+        self.prompt = promt  # название картинки из data, которая должна высветиться при наведении
+        #  курсором на спрайт, если подсказка не нужна передать ''
+
+
+class GameSprite(pygame.sprite.Sprite):  # класс для создания спрайтов игры
+    def __init__(self, rect_x, rect_y, file_name, visible_s, function):
+        super().__init__()
+        self.image = load_image(file_name)
+        self.size = load_image(file_name).get_size()
+        self.rect = self.image.get_rect()
+        self.rect.x = rect_x
+        self.rect.y = rect_y
+        self.visible = visible_s
+        self.function = function  # название картинки из data, которая должна высветиться при наведении
+        #  курсором на спрайт, если подсказка не нужна передать ''
+
+
 class Countries:  # класс владельцев провинций
-    def __init__(self, name, color, holder_army):
+    def __init__(self, name, color, money, duty, flag, holder_army):
         self.name = name
         self.color = color
         self.control_id = []
         self.army = holder_army
+        self.money = money  # текущий баланс
+        self.duty = duty  # внешний долг государства
+        self.flag = flag  # название файла флага страны из data\flags
 
 
 class SpritesCreateForMap(pygame.sprite.Sprite):  # класс для создания спрайтов карты
-    def __init__(self, id_province, name, rect_x, rect_y, file_name_img, holder, color):
+    def __init__(self, id_province, name, rect_x, rect_y, file_name_img, holder, color, fabric, trade_canter,
+                 population, tension, support_government, our_support, neighbours, function):
         super().__init__()
         self.update = self.update  # функция для обновления цвета
         self.id_province = id_province  # номер клетки
@@ -90,8 +108,16 @@ class SpritesCreateForMap(pygame.sprite.Sprite):  # класс для созда
         self.rect.x = rect_x
         self.rect.y = rect_y
         self.holder = holder  # имя текущего владельца
+        self.fabric = fabric  # количество промышленных предприятий в провинции
+        self.trade_canter = trade_canter  # текущий уровень торговой инфраструктуры в регионе
+        self.population = population  # количество населения в регионе
+        self.tension = tension  # уровень напряженности в регионе
+        self.support_government = support_government  # поддержка текущего правительства
+        self.our_support = our_support  # поддержка партии игрока в этом регионе
+        self.neighbours = neighbours  # соседние регионы легче вручную расписать для каждой провинции
+        self.function = function  # djj
 
-    def update(self, color):  #
+    def update(self, color):  # обновление цвета провинции (к примеру, после захвата)
         self.color = (int(color[0]), int(color[1]), int(color[2]))
         self.image = change_color(self.image_start, self.color)
 
@@ -122,9 +148,10 @@ def file_reader(file_name):  # чтение файла
             else:
                 holder_info_list.append(file_strings[string_num].split()[2])
         else:
-            print(holder_army)
             army2 = holder_army.copy()
-            list_of_holders.append(Countries(holder_info_list[0], holder_info_list[1], army2))
+            list_of_holders.append(
+                Countries(holder_info_list[0], holder_info_list[1], holder_info_list[2], holder_info_list[3],
+                          os.path.join("flags", holder_info_list[4]), army2))
             # list_of_holders.append(Countries(holder_info_list[0], holder_info_list[1], holder_army))
             holder_info_list.clear()
             holder_army.clear()
@@ -144,7 +171,10 @@ def file_reader(file_name):  # чтение файла
                         i.control_id.remove(sls_for_sprite_info[0])
             list_of_sprite.append(  # добавление спрайта - провинции в список
                 SpritesCreateForMap(sls_for_sprite_info[0], sls_for_sprite_info[1], int(sls_for_sprite_info[2]),
-                                    int(sls_for_sprite_info[3]), sls_for_sprite_info[4], sls_for_sprite_info[5], color))
+                                    int(sls_for_sprite_info[3]), sls_for_sprite_info[4], sls_for_sprite_info[5], color,
+                                    sls_for_sprite_info[6], sls_for_sprite_info[7], sls_for_sprite_info[8],
+                                    sls_for_sprite_info[9], sls_for_sprite_info[10], sls_for_sprite_info[11],
+                                    sls_for_sprite_info[12].split('.'), "open_region_info"))
             sls_for_sprite_info.clear()
         string_num += 1
     file.close()

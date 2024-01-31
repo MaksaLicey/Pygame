@@ -16,7 +16,7 @@ def main():
     sprite_play_btn = MenySpriteCreate(300, 30, "btn_GamePlay.png", True, 'open_start_menu')
     # спрайт кнопки начать новую игру, экземпляр класса SpriteCreate, из special.py
     sprite_setting_menu = MenySpriteCreate(700, 160, "setting_menu.png", False)  # создаем спрайт кнопки начала игры
-    sprite_open_setting = MenySpriteCreate(950, 30, "setting_btn_img.png", True, 'open_setting', '')
+    sprite_open_setting = MenySpriteCreate(950, 30, "setting_btn_img.png", True, 'open_setting')
     sprite_btn1_setting = MenySpriteCreate(sprite_setting_menu.rect.x + 20, sprite_setting_menu.rect.y + 20,
                                            "setting_btn_2.png", sprite_setting_menu.visible)  # создаем спрайт кнопки 2
     sprite_start_menu = MenySpriteCreate(100, 50, "start_menu.png", False)
@@ -68,20 +68,20 @@ def main():
                                         False)
     sprite_up_list = MenySpriteCreate(sprite_file_menu.rect.x + 20, sprite_file_menu.rect.y + 200,
                                       "up_list.png",
-                                      False, 'up_list', '')
+                                      False, 'up_list')
     sprite_down_list = MenySpriteCreate(sprite_file_menu.rect.x + 60, sprite_file_menu.rect.y + 200,
                                         "down_list.png",
-                                        False, 'down_list', '')
+                                        False, 'down_list')
     sprite_input_name_file = MenySpriteCreate(sprite_file_menu.rect.x + 20, sprite_file_menu.rect.y + 240,
                                               "input_name_file.png",
                                               False, 'start_input_file_name', '')
     sprite_crete_file = MenySpriteCreate(sprite_file_menu.rect.x + 30, sprite_file_menu.rect.y + 290,
                                          "create_file.png",
-                                         False, 'create_file_and_start', '')
+                                         False, 'create_file_and_start')
 
     sprite_file_name_mistake = MenySpriteCreate(sprite_file_menu.rect.x - 100, sprite_file_menu.rect.y - 140,
                                                 "file_name_mistake.png",
-                                                False, 'file_name_mistake', '')
+                                                False, 'file_name_mistake')
 
     # список спрайтов меню (в последующем не изменяется)
     menu_sprites = [sprite_play_btn, sprite_setting_menu, sprite_open_setting, sprite_btn1_setting, sprite_start_menu,
@@ -197,11 +197,12 @@ def main():
             if EVENT.type == pygame.QUIT:
                 running = False
             if EVENT.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                clicked_sprites = [s for s in group_visible_sprite if s.rect.collidepoint(
-                    pos)]  # добавление спрайтов, на которых был курсор мыши во время нажатия
-                if len(clicked_sprites) > 0:
-                    sprite_checker1()
+                if pygame.mouse.get_pressed()[0]:
+                    pos = pygame.mouse.get_pos()
+                    clicked_sprites = [s for s in group_visible_sprite if s.rect.collidepoint(
+                        pos)]  # добавление спрайтов, на которых был курсор мыши во время нажатия
+                    if len(clicked_sprites) > 0:
+                        sprite_checker1()
             if EVENT.type == pygame.KEYDOWN:
                 if text_input_active:  # ввод названия файла
                     if EVENT.key == pygame.K_BACKSPACE:
@@ -215,9 +216,8 @@ def main():
         for sprit in menu_sprites:
             if sprit.visible:
                 group_visible_sprite.add(sprit)  # добавление видимых спрайтов в группу
-            else:
-                if sprit in group_visible_sprite:
-                    group_visible_sprite.remove(sprit)
+            elif sprit in group_visible_sprite:
+                group_visible_sprite.remove(sprit)
         if not running:  # иногда окно уже закрыто, а цикл не завершен
             break
         screen.blit(image_for_menu, (0, 0))
