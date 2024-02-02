@@ -34,13 +34,12 @@ map(
     pos_y = 10
     image = Kol.png
     holder = Columbia
-    fabric = 10
-    trade_center = 10
     population = 10000000
     tension = 0
-    support_government = 30
+    support_government = 50000
     our_support = 0
     neighbours = 1.2
+    territory_name, objects лес.завод.10.0
     |
     id = 1
     name = Columbia_2
@@ -48,13 +47,13 @@ map(
     pos_y = 200
     image = Kol.png
     holder = Columbia_2
-    fabric = 10
-    trade_center = 10
     population = 10000000
     tension = 0
-    support_government = 30
-    our_support = 0
+    support_government = 800000
+    our_support = 10000
     neighbours = 0.2
+    territory_name, objects лес.пусто.завод.102.0
+    territory_name, objects город.лес.пусто.завод.102.0
     |
     id = 2
     name = Columbia_3
@@ -62,13 +61,17 @@ map(
     pos_y = 390
     image = Kol.png
     holder = Columbia_3
-    fabric = 10
-    trade_center = 10
     population = 10000000
     tension = 0
-    support_government = 30
+    support_government = 78000
     our_support = 0
     neighbours = 1.0
+    territory_name, objects лес.завод.пусто.10.0
+    territory_name, objects лес.пусто.10.5
+    territory_name, objects лес.пусто.10.2
+    territory_name, objects лес.пусто.10.2
+    territory_name, objects лес.пусто.10.2
+    territory_name, objects лес.пусто.10.2
     |
 )
 

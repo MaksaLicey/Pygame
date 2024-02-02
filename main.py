@@ -2,10 +2,6 @@ from Main_Game_File import *
 from special import *
 
 
-# import sdl2
-# import ctypes
-
-
 # файл для работы с меню
 
 def main():

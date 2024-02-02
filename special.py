@@ -70,7 +70,7 @@ class MenySpriteCreate(pygame.sprite.Sprite):  # класс для создан�
 
 
 class GameSprite(pygame.sprite.Sprite):  # класс для создания спрайтов игры
-    def __init__(self, rect_x, rect_y, file_name, visible_s, function):
+    def __init__(self, rect_x, rect_y, file_name, visible_s=True, function=''):
         super().__init__()
         self.image = load_image(file_name)
         self.size = load_image(file_name).get_size()
@@ -94,8 +94,8 @@ class Countries:  # класс владельцев провинций
 
 
 class SpritesCreateForMap(pygame.sprite.Sprite):  # класс для создания спрайтов карты
-    def __init__(self, id_province, name, rect_x, rect_y, file_name_img, holder, color, fabric, trade_canter,
-                 population, tension, support_government, our_support, neighbours, function):
+    def __init__(self, id_province, name, rect_x, rect_y, file_name_img, holder, color,
+                 population, tension, support_government, our_support, neighbours, town_list, function):
         super().__init__()
         self.update = self.update  # функция для обновления цвета
         self.id_province = id_province  # номер клетки
@@ -108,14 +108,13 @@ class SpritesCreateForMap(pygame.sprite.Sprite):  # класс для созда
         self.rect.x = rect_x
         self.rect.y = rect_y
         self.holder = holder  # имя текущего владельца
-        self.fabric = fabric  # количество промышленных предприятий в провинции
-        self.trade_canter = trade_canter  # текущий уровень торговой инфраструктуры в регионе
-        self.population = population  # количество населения в регионе
+        self.population = int(population)  # количество населения в регионе
         self.tension = tension  # уровень напряженности в регионе
-        self.support_government = support_government  # поддержка текущего правительства
+        self.support_government = int(support_government)  # поддержка текущего правительства
         self.our_support = our_support  # поддержка партии игрока в этом регионе
         self.neighbours = neighbours  # соседние регионы легче вручную расписать для каждой провинции
-        self.function = function  # djj
+        self.town_list = town_list
+        self.function = function  # хз скорей всего потом уберу
 
     def update(self, color):  # обновление цвета провинции (к примеру, после захвата)
         self.color = (int(color[0]), int(color[1]), int(color[2]))
@@ -133,6 +132,7 @@ def file_reader(file_name):  # чтение файла
     # всех владельцев соответственно
     string_num = 0  # номер читаемой строки
     # Т.к. класс SpritesCreateForMap и Countries никак не связаны, каждый, что определить
+    sprite_bildings = {}
     holder_army = {}
 
     while file_strings[string_num].split()[0] != "holder(":  # чтение информации об игре (все строки до "holder(")
@@ -158,9 +158,18 @@ def file_reader(file_name):  # чтение файла
         string_num += 1
     string_num += 2
 
+    index = 10
     while file_strings[string_num].split()[0] != ")":  # чтение владельцев и информации о них
         if file_strings[string_num].split()[0] != '|' and file_strings[string_num].split()[0] != ')':
-            sls_for_sprite_info.append(file_strings[string_num].split()[2])
+            if file_strings[string_num].split()[1] == "objects":
+                index += 1
+                sprite_bildings[file_strings[string_num].split()[2].split('.')[0] + str(index)] = \
+                    file_strings[string_num].split()[2].split('.')[1:-2], \
+                        file_strings[string_num].split()[2].split('.')[-2], \
+                        file_strings[string_num].split()[2].split('.')[
+                            -1]
+            else:
+                sls_for_sprite_info.append(file_strings[string_num].split()[2])
         else:
             for i in list_of_holders:  # изменение цвета в соответствии с цветом страны
                 if sls_for_sprite_info[5] == i.name:
@@ -169,13 +178,16 @@ def file_reader(file_name):  # чтение файла
                 else:
                     if sls_for_sprite_info[0] in i.control_id:
                         i.control_id.remove(sls_for_sprite_info[0])
+            # print(sprite_bildings)
+            sprite_bildings_copy = sprite_bildings.copy()
             list_of_sprite.append(  # добавление спрайта - провинции в список
                 SpritesCreateForMap(sls_for_sprite_info[0], sls_for_sprite_info[1], int(sls_for_sprite_info[2]),
                                     int(sls_for_sprite_info[3]), sls_for_sprite_info[4], sls_for_sprite_info[5], color,
                                     sls_for_sprite_info[6], sls_for_sprite_info[7], sls_for_sprite_info[8],
-                                    sls_for_sprite_info[9], sls_for_sprite_info[10], sls_for_sprite_info[11],
-                                    sls_for_sprite_info[12].split('.'), "open_region_info"))
+                                    sls_for_sprite_info[9], sls_for_sprite_info[10].split('.'), sprite_bildings_copy,
+                                    "open_region_info"))
             sls_for_sprite_info.clear()
+            sprite_bildings.clear()
         string_num += 1
     file.close()
     list_for_return = [list_of_sprite, sls_for_file_info, list_of_holders]
