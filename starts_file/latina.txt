@@ -4,6 +4,7 @@ holder(
        money = 100
        duty = 10
        flag = columbia_flag.png
+       bot = True
        province_id, army_in_it 0.100.20.0.0.0
        province_id, army_in_it 1.10.0.0.0.1
        province_id, army_in_it 2.900.0.56.0.1
@@ -13,6 +14,7 @@ holder(
        money = 100
        duty = 0
        flag = columbia_flag.png
+       bot = False
        province_id, army_in_it 0.90.20.0.0.0
        province_id, army_in_it 1.10.0.0.0.1
        province_id, army_in_it 2.0.745.0.0.1
@@ -22,6 +24,7 @@ holder(
        money = 100
        duty = 0
        flag = columbia_flag.png
+       bot = True
        province_id, army_in_it 0.0.0.0.0.0
        province_id, army_in_it 1.0.0.0.0.0
        province_id, army_in_it 2.2.0.2.0.0
@@ -31,7 +34,7 @@ map(
     id = 0
     name = Columbia
     pos_x = 10
-    pos_y = 10
+    pos_y = 50
     image = Kol.png
     holder = Columbia
     population = 10000000
@@ -39,12 +42,13 @@ map(
     support_government = 50000
     our_support = 0
     neighbours = 1.2
+    bot = False
     territory_name, objects лес.завод.10.0
     |
     id = 1
     name = Columbia_2
     pos_x = 10
-    pos_y = 200
+    pos_y = 250
     image = Kol.png
     holder = Columbia_2
     population = 10000000
@@ -58,7 +62,7 @@ map(
     id = 2
     name = Columbia_3
     pos_x = 10
-    pos_y = 390
+    pos_y = 340
     image = Kol.png
     holder = Columbia_3
     population = 10000000

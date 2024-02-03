@@ -1,3 +1,5 @@
+import pygame.mouse
+
 from special import *
 import os
 
@@ -51,9 +53,20 @@ def render(file_name):
     mouse_start = 0, 0
 
     def move_region_menu(flag, mouse_start_pos):
+        delta_x = pygame.mouse.get_pos()[0] - mouse_start_pos[0]
+        delta_y = pygame.mouse.get_pos()[1] - mouse_start_pos[1]
         if flag:
-            sprit_.rect.x = pygame.mouse.get_pos()[0] - mouse_start_pos[0]
-            sprit_.rect.y = pygame.mouse.get_pos()[1] - mouse_start_pos[1]
+                sprite_province_info.rect.x = delta_x
+                sprite_province_info.rect.y = delta_y
+        if sprite_province_info.rect.y + sprite_province_info.rect[1] > size_menu[1]:
+                sprite_province_info.rect.y -= 3
+        elif sprite_province_info.rect.y + sprite_province_info.rect[1] < 0:
+            sprite_province_info.rect.y += 3
+        if sprite_province_info.rect.x + sprite_province_info.rect[2] > size_menu[0]:
+            sprite_province_info.rect.x -= 3
+        elif sprite_province_info.rect.x < 0:
+            sprite_province_info.rect.x += 3
+
 
     def open_sprite_list(flag=False, sprite=''):  # функция для смены видимости окна и его отображения
         # если передать True и экземпляр нажатого класса SpritesCreateForMap,
@@ -65,31 +78,39 @@ def render(file_name):
             else:
                 selected_map_sprite = sprite
                 sprite_province_info.visible = not sprite_province_info.visible
-            print(selected_map_sprite.town_list)
+            # print(selected_map_sprite.town_list)
         else:
             if sprite_province_info.visible:
                 group_visible_sprite_1.add(sprite_province_info)
                 group_visible_sprite_1.draw(screen_main)
-                str1 = "население: " + str(selected_map_sprite.population) + " поддержка правительства" + str(
-                    "%.2f" % (selected_map_sprite.support_government / selected_map_sprite.population * 100)) + "%"
-                screen_main.blit(pygame.font.Font(None, 28).render(str1, True, (255, 0, 0)),
-                                 (sprite_province_info.rect.x + 20,
-                                  sprite_province_info.rect.y + 30))  # вывести название региона
+                str1 = "население: " + str(selected_map_sprite.population) + "чел."
+                str2 = "поддержка враждебных партий: " + str("%.2f" % (
+                        selected_map_sprite.support_government / selected_map_sprite.population * 100)) + "%" + " (" + str(
+                    selected_map_sprite.support_government) + ')'
+                str3 = "поддержка нашего движения: " + str(
+                    "%.2f" % (
+                            selected_map_sprite.our_support / selected_map_sprite.population * 100)) + "%" + " (" + str(
+                    selected_map_sprite.our_support) + ")"
+                sls = [str1, str2, str3]
+                for i in range(len(sls)):
+                    screen_main.blit(pygame.font.Font(None, 26).render(sls[i], True, (255, 0, 0)),
+                                     (sprite_province_info.rect.x + 20,
+                                      sprite_province_info.rect.y + 30 + (i * 20)))
                 screen_main.blit(pygame.font.Font(None, 32).render(selected_map_sprite.name, True, (255, 0, 0)),
                                  (sprite_province_info.rect.x + 200,
                                   sprite_province_info.rect.y + 10))  # вывести название региона
                 index_x = 0  # индекс смещения иконок по x и y соответственно
                 for el in selected_map_sprite.town_list:  # цикл для отображения всех построек и местности региона
                     group_buildings_icons.add(GameSprite(sprite_province_info.rect.x + 10 + index_x * 60,
-                                                         sprite_province_info.rect.y + 70,
+                                                         sprite_province_info.rect.y + 110,
                                                          os.path.join("bildings_icons", el[0:-2]) + '.png'))
                     group_buildings_icons.add(GameSprite(sprite_province_info.rect.x + 10 + index_x * 60,
-                                                         sprite_province_info.rect.y + 50,
+                                                         sprite_province_info.rect.y + 90,
                                                          os.path.join("bildings_icons",
                                                                       selected_map_sprite.town_list[el][-1]) + '.png'))
                     for i in range(len(selected_map_sprite.town_list[el][0])):
                         group_buildings_icons.add(GameSprite(sprite_province_info.rect.x + 10 + index_x * 60,
-                                                             sprite_province_info.rect.y + 70 + (i + 1) * 60,
+                                                             sprite_province_info.rect.y + 110 + (i + 1) * 60,
                                                              os.path.join("bildings_icons",
                                                                           selected_map_sprite.town_list[el][0][
                                                                               i]) + '.png'))
@@ -118,6 +139,10 @@ def render(file_name):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
                     running_2 = False
+            if event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    flag_move_1 = False
+                    print(sprit_.rect)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for sprit in sprite_map_list:
                     pos_in_mask = event.pos[0] - sprit.rect.x, event.pos[1] - sprit.rect.y
@@ -127,7 +152,7 @@ def render(file_name):
                             l(True, sprit)  # который передается как ключ в словарь функций functions
                 for sprit_ in sprites_list:
                     if sprit_.rect.collidepoint(pygame.mouse.get_pos()) and sprit_.visible:
-                        if sprit_.function == "move_region_menu" and pygame.mouse.get_pressed()[2]:
+                        if sprit_.function == "move_region_menu" and pygame.mouse.get_pressed()[0]:
                             flag_move_1 = not flag_move_1
                             if flag_move_1:
                                 mouse_start = pygame.mouse.get_pos()[0] - sprit_.rect.x, pygame.mouse.get_pos()[

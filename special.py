@@ -83,7 +83,7 @@ class GameSprite(pygame.sprite.Sprite):  # класс для создания с
 
 
 class Countries:  # класс владельцев провинций
-    def __init__(self, name, color, money, duty, flag, holder_army):
+    def __init__(self, name, color, money, duty, flag, bot, holder_army):
         self.name = name
         self.color = color
         self.control_id = []
@@ -91,6 +91,7 @@ class Countries:  # класс владельцев провинций
         self.money = money  # текущий баланс
         self.duty = duty  # внешний долг государства
         self.flag = flag  # название файла флага страны из data\flags
+        self.bot = True if bot == "True" else False
 
 
 class SpritesCreateForMap(pygame.sprite.Sprite):  # класс для создания спрайтов карты
@@ -111,7 +112,7 @@ class SpritesCreateForMap(pygame.sprite.Sprite):  # класс для созда
         self.population = int(population)  # количество населения в регионе
         self.tension = tension  # уровень напряженности в регионе
         self.support_government = int(support_government)  # поддержка текущего правительства
-        self.our_support = our_support  # поддержка партии игрока в этом регионе
+        self.our_support = int(our_support)  # поддержка партии игрока в этом регионе
         self.neighbours = neighbours  # соседние регионы легче вручную расписать для каждой провинции
         self.town_list = town_list
         self.function = function  # хз скорей всего потом уберу
@@ -151,7 +152,7 @@ def file_reader(file_name):  # чтение файла
             army2 = holder_army.copy()
             list_of_holders.append(
                 Countries(holder_info_list[0], holder_info_list[1], holder_info_list[2], holder_info_list[3],
-                          os.path.join("flags", holder_info_list[4]), army2))
+                          os.path.join("flags", holder_info_list[4]), holder_info_list[3], army2))
             # list_of_holders.append(Countries(holder_info_list[0], holder_info_list[1], holder_army))
             holder_info_list.clear()
             holder_army.clear()
@@ -184,8 +185,8 @@ def file_reader(file_name):  # чтение файла
                 SpritesCreateForMap(sls_for_sprite_info[0], sls_for_sprite_info[1], int(sls_for_sprite_info[2]),
                                     int(sls_for_sprite_info[3]), sls_for_sprite_info[4], sls_for_sprite_info[5], color,
                                     sls_for_sprite_info[6], sls_for_sprite_info[7], sls_for_sprite_info[8],
-                                    sls_for_sprite_info[9], sls_for_sprite_info[10].split('.'), sprite_bildings_copy,
-                                    "open_region_info"))
+                                    sls_for_sprite_info[9], sls_for_sprite_info[10].split('.'),
+                                    sprite_bildings_copy, "open_region_info"))
             sls_for_sprite_info.clear()
             sprite_bildings.clear()
         string_num += 1
