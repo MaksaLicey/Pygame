@@ -204,7 +204,8 @@ def main():
                     if EVENT.key == pygame.K_BACKSPACE:
                         text_file_name = text_file_name[:-1]
                     else:
-                        if EVENT.unicode != '\r':
+                        if (EVENT.unicode != '\\' and EVENT.unicode != '/' and EVENT.unicode != '\r' and
+                                EVENT.unicode != '\t' and EVENT.unicode != '\x1b' and EVENT.unicode != '|'):
                             text_file_name += EVENT.unicode
                 if EVENT.key == pygame.K_ESCAPE and sprite_file_menu.visible:  # закрытие меню создания файла на esc
                     list_file_menu()

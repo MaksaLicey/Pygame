@@ -34,7 +34,7 @@ map(
     id = 0
     name = Columbia
     pos_x = 10
-    pos_y = 50
+    pos_y = 100
     image = Kol.png
     holder = Columbia
     population = 10000000
@@ -48,7 +48,7 @@ map(
     id = 1
     name = Columbia_2
     pos_x = 10
-    pos_y = 250
+    pos_y = 300
     image = Kol.png
     holder = Columbia_2
     population = 10000000
@@ -62,7 +62,7 @@ map(
     id = 2
     name = Columbia_3
     pos_x = 10
-    pos_y = 340
+    pos_y = 400
     image = Kol.png
     holder = Columbia_3
     population = 10000000

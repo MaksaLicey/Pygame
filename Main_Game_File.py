@@ -8,6 +8,7 @@ import os
 
 def create_file(name_file, start_option_1, start_option_2, start_option_3):  # получаем параметры игры
     file_game = open(os.path.join("saves", name_file), mode="w", encoding="utf-8")  # создаем новый файл
+    # except
     file_game.write(f"file_name = {name_file}" + "\n")  # записываем в него все стартовые параметры
     file_game.write(f"map_name = {start_option_1[7:-4]}" + "\n")
     file_game.write(f"difficult = {start_option_2[7:-4]} \n")
@@ -35,37 +36,81 @@ def render(file_name):
     pygame.display.set_icon(image_for_icon)
     pygame.display.set_caption('The final strike')  # название приложения
 
-    sprite_province_info = GameSprite(500, 10, "province_info.png", False, "move_region_menu")
+    sprite_province_info = GameSprite(500, 10, os.path.join("game_sprites", "province_info.png"), False,
+                                      "move_region_menu")
+    county_info = GameSprite(500, 500, os.path.join("game_sprites", "country_info.png"), False,
+                             "move_region_menu")
 
-    sprites_list = [sprite_province_info]
-    group_visible_sprite_1 = pygame.sprite.Group()
-    group_buildings_icons = pygame.sprite.Group()
+    open_menu = GameSprite(1400, 10, os.path.join("game_sprites", "menu_game.png"), True, "menu_click")
+    top_panel = GameSprite(0, 0, os.path.join("game_sprites", "top_panel.png"), True, "")
+
+    special_sprite_list = [sprite_province_info]  # список для определенных спрайтов(меню региона, меню владельца)
+    group_visible_sprite_1 = pygame.sprite.Group()  # и группа для них
+    interface_sprite_list = [top_panel, open_menu]  # лист для спрайтов интерфейса
+    group_interface = pygame.sprite.Group()  # и группа для них
+    group_buildings_icons = pygame.sprite.Group()  # группа для иконок при отображении информации о регионе
 
     info_list_from_file = file_reader(file_name)  # получение информации из файла
-    sprite_map_list = info_list_from_file[0]
-    file_info_list = info_list_from_file[1]
-    country_list = info_list_from_file[2]
-    group_map_sprite = pygame.sprite.Group()
+    sprite_map_list = info_list_from_file[0]  # список спрайтов карты
+    group_map_sprite = pygame.sprite.Group()  # и группа спрайтов для них
+    file_info_list = info_list_from_file[1]  # список с информацией об игре (время, сложность и тд)
+    country_list = info_list_from_file[2]  # список стран (возможных владельцев)
     for sprite_ in sprite_map_list:  # добавление всех спрайтов карты в группу group_map_sprite
         group_map_sprite.add(sprite_)
 
-    flag_move_1 = False
-    mouse_start = 0, 0
+    sprite_move_now = special_sprite_list[0]
+    flag_move_1 = False  # флаг перемещения спрайта взаимодействия с регионом
+    mouse_start = 0, 0  # позиции мыши в начале перемещения
+    click_r_1 = False  # флаг (если выключен, спрайт не сможет выйти за границы экрана)
 
-    def move_region_menu(flag, mouse_start_pos):
-        delta_x = pygame.mouse.get_pos()[0] - mouse_start_pos[0]
-        delta_y = pygame.mouse.get_pos()[1] - mouse_start_pos[1]
+    def move_region_menu(flag, mouse_start_pos, flag2=False):  # функция для перемещения спрайта
+        delta_x = pygame.mouse.get_pos()[0] - mouse_start_pos[0]  # изменение координат по x
+        delta_y = pygame.mouse.get_pos()[1] - mouse_start_pos[1]  # изменение координат по y
+        if flag:  # True, если левая кнопка мыши зажата на спрайте
+            sprite_move_now.rect.x = delta_x
+            sprite_move_now.rect.y = delta_y
+        if sprite_move_now.rect.y + sprite_move_now.rect[2] - 450 > size_menu[1]:
+            sprite_move_now.rect.y -= 3
+        elif sprite_move_now.rect.y < -350:
+            sprite_move_now.rect.y += 3
+        if sprite_move_now.rect.x > size_menu[0] - 50:
+            sprite_move_now.rect.x -= 3
+        elif sprite_move_now.rect.x + sprite_move_now.rect[3] < -50:
+            sprite_move_now.rect.x += 3
+        if flag2:
+            if sprite_move_now.rect.y + sprite_move_now.rect[1] > size_menu[1]:
+                sprite_move_now.rect.y -= 3
+            elif sprite_move_now.rect.y + sprite_move_now.rect[1] < 0:
+                sprite_move_now.rect.y += 3
+            if sprite_move_now.rect.x + sprite_move_now.rect[2] > size_menu[0]:
+                sprite_move_now.rect.x -= 3
+            elif sprite_move_now.rect.x < 0:
+                sprite_move_now.rect.x += 3
+
+    def render_interface():
+        for i in interface_sprite_list:
+            if i.visible:
+                group_interface.add(i)
+            elif not i.visible and i in group_interface:
+                group_interface.remove(i)
+        group_interface.draw(screen_main)
+
+    def menu_click():
+        print('1')
+
+    def open_sprite_list_2(flag=False, sprite=''):
+        global selected_map_sprite_2
+
         if flag:
-                sprite_province_info.rect.x = delta_x
-                sprite_province_info.rect.y = delta_y
-        if sprite_province_info.rect.y + sprite_province_info.rect[1] > size_menu[1]:
-                sprite_province_info.rect.y -= 3
-        elif sprite_province_info.rect.y + sprite_province_info.rect[1] < 0:
-            sprite_province_info.rect.y += 3
-        if sprite_province_info.rect.x + sprite_province_info.rect[2] > size_menu[0]:
-            sprite_province_info.rect.x -= 3
-        elif sprite_province_info.rect.x < 0:
-            sprite_province_info.rect.x += 3
+            if sprite != '' and county_info.visible and selected_map_sprite_2 != sprite:
+                selected_map_sprite_2 = sprite
+            else:
+                selected_map_sprite_2 = sprite
+                county_info.visible = not county_info.visible
+        # if county_info.visible:
+        #     group_visible_sprite_1.add(county_info)
+        # elif not county_info.visible and county_info in group_visible_sprite_1:
+        #     group_visible_sprite_1.remove(county_info)
 
 
     def open_sprite_list(flag=False, sprite=''):  # функция для смены видимости окна и его отображения
@@ -78,15 +123,14 @@ def render(file_name):
             else:
                 selected_map_sprite = sprite
                 sprite_province_info.visible = not sprite_province_info.visible
-            # print(selected_map_sprite.town_list)
         else:
             if sprite_province_info.visible:
                 group_visible_sprite_1.add(sprite_province_info)
                 group_visible_sprite_1.draw(screen_main)
                 str1 = "население: " + str(selected_map_sprite.population) + "чел."
-                str2 = "поддержка враждебных партий: " + str("%.2f" % (
-                        selected_map_sprite.support_government / selected_map_sprite.population * 100)) + "%" + " (" + str(
-                    selected_map_sprite.support_government) + ')'
+                str2 = ("поддержка враждебных партий: " + str("%.2f" % (
+                        selected_map_sprite.support_government / selected_map_sprite.population * 100)) + "%" + " (" +
+                        str(selected_map_sprite.support_government) + ')')
                 str3 = "поддержка нашего движения: " + str(
                     "%.2f" % (
                             selected_map_sprite.our_support / selected_map_sprite.population * 100)) + "%" + " (" + str(
@@ -118,7 +162,6 @@ def render(file_name):
                 group_buildings_icons.draw(screen_main)
                 for i in group_buildings_icons:  # Очистка
                     group_buildings_icons.remove(i)
-
             elif not sprite_province_info.visible and sprite_province_info in group_visible_sprite_1:
                 group_visible_sprite_1.remove(group_visible_sprite_1)
 
@@ -126,12 +169,14 @@ def render(file_name):
         # наконец решил оформить код, исполняемый при нажатии
         # на спрайт в отдельные функции и поместить их в список...
         "open_region_info": open_sprite_list,
-        "move_region_menu": move_region_menu
+        "open_region_info_2": open_sprite_list_2,
+        "move_region_menu": move_region_menu,
+        "menu_click": menu_click
     }
     clock = pygame.time.Clock()
     running_2 = True
     while running_2:
-        clock.tick(144)
+        clock.tick(60)
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
@@ -142,26 +187,40 @@ def render(file_name):
             if event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
                     flag_move_1 = False
-                    print(sprit_.rect)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for sprit in sprite_map_list:
                     pos_in_mask = event.pos[0] - sprit.rect.x, event.pos[1] - sprit.rect.y
                     if sprit.rect.collidepoint(event.pos) and sprit.mask.get_at(pos_in_mask):
                         if pygame.mouse.get_pressed()[0]:  # проверка, что была нажата левая клавиша мыши
-                            l = functions[sprit.function]  # вызов функции по атрибуту function
-                            l(True, sprit)  # который передается как ключ в словарь функций functions
-                for sprit_ in sprites_list:
+                            function_call = functions[sprit.function]  # вызов функции по атрибуту function
+                            function_call(True, sprit)  # который передается как ключ в словарь функций functions
+                        elif pygame.mouse.get_pressed()[2]:  # проверка, что была нажата левая клавиша мыши
+                            function_call = functions[sprit.function + '_2']  # вызов функции по атрибуту function
+                            function_call(True, sprit)  # который передается как ключ в словарь функций functions
+                for sprit_ in special_sprite_list:
                     if sprit_.rect.collidepoint(pygame.mouse.get_pos()) and sprit_.visible:
+                        sprite_move_now = sprit_
                         if sprit_.function == "move_region_menu" and pygame.mouse.get_pressed()[0]:
                             flag_move_1 = not flag_move_1
                             if flag_move_1:
                                 mouse_start = pygame.mouse.get_pos()[0] - sprit_.rect.x, pygame.mouse.get_pos()[
                                     1] - sprit_.rect.y
+                        elif sprit_.function == "move_region_menu" and pygame.mouse.get_pressed()[2]:
+                            click_r_1 = not click_r_1
+                for sprit_2 in interface_sprite_list:
+                    if sprit_2.rect.collidepoint(pygame.mouse.get_pos()) and sprit_2.visible:
+                        if pygame.mouse.get_pressed()[0]:
+                            if sprit_2.function != '':
+                                function_call = functions[sprit_2.function]
+                                function_call()
+
         pygame.draw.rect(screen_main, (0, 0, 0),
                          (0, 0, size_menu[0], size_menu[1]))  # (временно) заполнение экрана черным фоном
         group_map_sprite.draw(screen_main)
+        open_sprite_list_2()
         open_sprite_list()
-        move_region_menu(flag_move_1, mouse_start)
+        move_region_menu(flag_move_1, mouse_start, True) if click_r_1 else move_region_menu(flag_move_1, mouse_start)
+        render_interface()
         pygame.display.update()
 
 
