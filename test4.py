@@ -1,73 +1,44 @@
-import pygame
-import os
 import sys
-from os import walk
 
 
-def load_image(name, colorkey=None):  # функция для загрузки изображений
-    fullname = os.path.join('data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    if colorkey is not None:
-        image = image.convert()
-        if colorkey == -1:
-            colorkey = image.get_at((0, 0))
-        image.set_colorkey(colorkey)
-    # else:
-    #     image = image.convert_alpha()
-    return image
+def get_coordinates(toponym):
+    return 1, 1
 
 
-class MenySpriteCreate(pygame.sprite.Sprite):  # класс для создания спрайтов меню
-    def __init__(self, rect_x, rect_y, file_name):
-        super().__init__()
-        self.image = load_image(file_name)
-        self.size = load_image(file_name).get_size()
-        self.rect = self.image.get_rect()
-        self.rect.x = rect_x
-        self.rect.y = rect_y
+def show_map(var1, var2, var=''):
+    pass
+
+
+def get_ll_span(var1):
+    return 1, 1
 
 
 def main():
-    pygame.init()
-    size_menu = 1100, 700  # размер меню
-    screen = pygame.display.set_mode(size_menu)
+    api_key = "d8f4fbf5-ca85-4e77-a9ff-61a96364f374"
 
-    pygame.display.set_caption('The final strike')  # название приложения
+    address_ll = "37.588392,55.734036"
+    search_params = {
+        "apikey": api_key,
+        "text": "аптека",
+        "lang": "ru_RU",
+        "ll": address_ll,
+        "type": "biz"
+    }
 
-    sprite = MenySpriteCreate(100, 100, "prompt_1.png")
-    sls = pygame.sprite.Group()
-    sls.add(sprite)
-    clock = pygame.time.Clock()
+    toponym_to_find = " ".join(sys.argv[1:])
 
-    flag = False
-    mouse_start = 0, 0
-    # mouse_start
+    if toponym_to_find:
+        lat, lon = get_coordinates(toponym_to_find)
+        ll_spn = f"ll={lat},{lon}&spn=0.005,0.005"
+        show_map(ll_spn, "map")
 
-    global running
-    while running:  # основной цикл игры
-        clock.tick(60)
-        events = pygame.event.get()
-        for EVENT in events:
-            if EVENT.type == pygame.QUIT:
-                running = False
-            if EVENT.type == pygame.MOUSEBUTTONDOWN:
-                if pygame.mouse.get_pressed()[1]:
-                    pos = pygame.mouse.get_pos()
-                    if sprite.rect.collidepoint(pos):
-                        flag = not flag
-                        if flag:
-                            mouse_start = pos[0] - sprite.rect.x, pos[1] - sprite.rect.y
-            if flag:
-                sprite.rect.x = pygame.mouse.get_pos()[0] - mouse_start[0]
-                sprite.rect.y = pygame.mouse.get_pos()[1] - mouse_start[1]
-        pygame.draw.rect(screen, (0, 0, 0),
-                         (0, 0, size_menu[0], size_menu[1]))  # (временно) заполнение экрана черным фоном
-        sls.draw(screen)
-        pygame.display.update()
+        ll, spn = get_ll_span(toponym_to_find)
+        ll_spn = f'll={ll}&spn={spn}'
+        # show_map(ll_spn, "map", add_params=point_param)
+
+    else:
+        print("ага!")
 
 
-running = True
-main()
+if __name__ == '__main__':
+    main()

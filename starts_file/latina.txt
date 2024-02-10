@@ -1,25 +1,25 @@
 holder(
-       name = Columbia
+       name = Russian
        color = 20.255.20
        money = 100
        duty = 10
        flag = columbia_flag.png
-       bot = True
+       bot = False
        province_id, army_in_it 0.100.20.0.0.0
        province_id, army_in_it 1.10.0.0.0.1
        province_id, army_in_it 2.900.0.56.0.1
        |
-       name = Columbia_2
+       name = Germany
        color = 255.0.0
        money = 100
        duty = 0
        flag = columbia_flag.png
-       bot = False
+       bot = True
        province_id, army_in_it 0.90.20.0.0.0
        province_id, army_in_it 1.10.0.0.0.1
        province_id, army_in_it 2.0.745.0.0.1
        |
-       name = Columbia_3
+       name = Brazil
        color = 255.255.255
        money = 100
        duty = 0
@@ -36,7 +36,7 @@ map(
     pos_x = 10
     pos_y = 100
     image = Kol.png
-    holder = Columbia
+    holder = Russian
     population = 10000000
     tension = 0
     support_government = 50000
@@ -50,7 +50,7 @@ map(
     pos_x = 10
     pos_y = 300
     image = Kol.png
-    holder = Columbia_2
+    holder = Germany
     population = 10000000
     tension = 0
     support_government = 800000
@@ -64,7 +64,25 @@ map(
     pos_x = 10
     pos_y = 400
     image = Kol.png
-    holder = Columbia_3
+    holder = Brazil
+    population = 10000000
+    tension = 0
+    support_government = 78000
+    our_support = 0
+    neighbours = 1.0
+    territory_name, objects лес.завод.пусто.10.0
+    territory_name, objects лес.пусто.10.5
+    territory_name, objects лес.пусто.10.2
+    territory_name, objects лес.пусто.10.2
+    territory_name, objects лес.пусто.10.2
+    territory_name, objects лес.пусто.10.2
+    |
+    id = 3
+    name = Columbia_4
+    pos_x = 100
+    pos_y = 500
+    image = Kol.png
+    holder = Russian
     population = 10000000
     tension = 0
     support_government = 78000

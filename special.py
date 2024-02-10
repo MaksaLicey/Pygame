@@ -2,6 +2,7 @@ import pygame
 import os
 import sys
 from os import walk
+# from special_2 import *
 
 
 # вспомогательный файл с функциями и классами
@@ -90,8 +91,9 @@ class Countries:  # класс владельцев провинций
         self.army = holder_army
         self.money = money  # текущий баланс
         self.duty = duty  # внешний долг государства
+        # print(name, color, money, duty, flag, bot1, holder_army)
+        self.bot = True if bot == "True" else False  # бот или игрок?
         self.flag = flag  # название файла флага страны из data\flags
-        self.bot = True if bot == "True" else False
 
 
 class SpritesCreateForMap(pygame.sprite.Sprite):  # класс для создания спрайтов карты
@@ -152,7 +154,7 @@ def file_reader(file_name):  # чтение файла
             army2 = holder_army.copy()
             list_of_holders.append(
                 Countries(holder_info_list[0], holder_info_list[1], holder_info_list[2], holder_info_list[3],
-                          os.path.join("flags", holder_info_list[4]), holder_info_list[3], army2))
+                          os.path.join("flags", holder_info_list[4]), holder_info_list[5], army2))
             # list_of_holders.append(Countries(holder_info_list[0], holder_info_list[1], holder_army))
             holder_info_list.clear()
             holder_army.clear()
