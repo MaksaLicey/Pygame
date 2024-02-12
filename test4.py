@@ -1,44 +1,74 @@
-import sys
+class A:
+    def __init__(self):
+        print("A start")
+        self.running = True
+        self.open_class = False
+        self.cycle()
+
+    def fake__init__(self):
+        self.running = True
+        # self.open_class = False
+        self.cycle()
+
+    def cycle(self):
+        while self.running:
+            str1 = input()
+            if str1 == "A close":
+                self.running = False
+                self.open_class = True
+                print("А was close")
+            elif str1 == "stop all":
+                self.running = False
+                self.open_class = False
+
+    def stop(self):
+        self.open_class = False
 
 
-def get_coordinates(toponym):
-    return 1, 1
+class B:
+    def __init__(self, flag1=False):
+        print("B start")
+        self.running = True
+        self.open_class = False
+        self.cycle()
+
+    def fake__init__(self):
+        self.running = True
+        # self.open_class = False
+        self.cycle()
+
+    def cycle(self):
+        while self.running:
+            str1 = input()
+            if str1 == "B close":
+                self.running = False
+                self.open_class = True
+                print("B was close")
+            elif str1 == "stop all":
+                self.running = False
+                self.open_class = False
+
+    def stop(self):
+        self.open_class = False
 
 
-def show_map(var1, var2, var=''):
-    pass
+def game_nanager():
+    app1 = A()
+    app2 = None
+    while True:
+        print("1")
+        if app1.open_class:
+            if app2 is None:
+                app2 = B()
+            else:
+                app2.fake__init__()
+            app1.stop()
+        elif app2.open_class:
+            app1.fake__init__()
+            app2.stop()
+        elif not app1.open_class and not app2.open_class:
+            print("end cycle of classes")
+            break
 
 
-def get_ll_span(var1):
-    return 1, 1
-
-
-def main():
-    api_key = "d8f4fbf5-ca85-4e77-a9ff-61a96364f374"
-
-    address_ll = "37.588392,55.734036"
-    search_params = {
-        "apikey": api_key,
-        "text": "аптека",
-        "lang": "ru_RU",
-        "ll": address_ll,
-        "type": "biz"
-    }
-
-    toponym_to_find = " ".join(sys.argv[1:])
-
-    if toponym_to_find:
-        lat, lon = get_coordinates(toponym_to_find)
-        ll_spn = f"ll={lat},{lon}&spn=0.005,0.005"
-        show_map(ll_spn, "map")
-
-        ll, spn = get_ll_span(toponym_to_find)
-        ll_spn = f'll={ll}&spn={spn}'
-        # show_map(ll_spn, "map", add_params=point_param)
-
-    else:
-        print("ага!")
-
-
-if __name__ == '__main__':
-    main()
+game_nanager()

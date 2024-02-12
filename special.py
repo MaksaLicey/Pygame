@@ -2,25 +2,28 @@ import pygame
 import os
 import sys
 from os import walk
+
+
 # from special_2 import *
 
 
 # вспомогательный файл с функциями и классами
 
 
-def load_image(name, colorkey=None):  # функция для загрузки изображений
+def load_image(name, screen=None, colorkey=None):  # функция для загрузки изображений
     fullname = os.path.join('data', name)
     if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
+        if name != '': print(f"Файл с изображением '{fullname}' не найден")
+        # sys.exit()
+        fullname = os.path.join('data', "non_img.png")
     image = pygame.image.load(fullname)
     if colorkey is not None:
         image = image.convert()
         if colorkey == -1:
             colorkey = image.get_at((0, 0))
         image.set_colorkey(colorkey)
-    # else:
-    #     image = image.convert_alpha()
+    elif screen != None:
+        image = image.convert_alpha()
     return image
 
 
@@ -56,10 +59,10 @@ def change_color(image, color):  # функция смены цвета спра
     return final_image
 
 
-class MenySpriteCreate(pygame.sprite.Sprite):  # класс для создания спрайтов меню
-    def __init__(self, rect_x, rect_y, file_name, visible_s, fuction_s='', promt=''):
+class MenySpriteCreate(pygame.sprite.Sprite):  # класс для создания спрайтов начального меню
+    def __init__(self, scree=None, rect_x=0, rect_y=0, file_name="", visible_s=False, fuction_s='', promt=''):
         super().__init__()
-        self.image = load_image(file_name)
+        self.image = load_image(file_name, scree)
         self.size = load_image(file_name).get_size()
         self.rect = self.image.get_rect()
         self.rect.x = rect_x
@@ -71,9 +74,9 @@ class MenySpriteCreate(pygame.sprite.Sprite):  # класс для создан�
 
 
 class GameSprite(pygame.sprite.Sprite):  # класс для создания спрайтов игры
-    def __init__(self, rect_x, rect_y, file_name, visible_s=True, function=''):
+    def __init__(self, screen, rect_x, rect_y, file_name, visible_s=True, function=''):
         super().__init__()
-        self.image = load_image(file_name)
+        self.image = load_image(file_name, screen)
         self.size = load_image(file_name).get_size()
         self.rect = self.image.get_rect()
         self.rect.x = rect_x
@@ -98,12 +101,12 @@ class Countries:  # класс владельцев провинций
 
 class SpritesCreateForMap(pygame.sprite.Sprite):  # класс для создания спрайтов карты
     def __init__(self, id_province, name, rect_x, rect_y, file_name_img, holder, color,
-                 population, tension, support_government, our_support, neighbours, town_list, function):
+                 population, tension, support_government, our_support, neighbours, town_list, function, screen_):
         super().__init__()
         self.update = self.update  # функция для обновления цвета
         self.id_province = id_province  # номер клетки
         self.name = name  # имя провинции
-        self.image_start = load_image(file_name_img)  # сохранения первоначального изображения
+        self.image_start = load_image(file_name_img, screen_)  # сохранения первоначального изображения
         self.color = (int(color[0]), int(color[1]), int(color[2]))  # цвет, полученный от текущего владельца
         self.image = change_color(self.image_start, self.color)  # задание цвета (нужно только во время создания)
         self.rect = self.image.get_rect()
@@ -124,7 +127,7 @@ class SpritesCreateForMap(pygame.sprite.Sprite):  # класс для созда
         self.image = change_color(self.image_start, self.color)
 
 
-def file_reader(file_name):  # чтение файла
+def file_reader(file_name, screen_):  # чтение файла
     color = ''
     file = open(os.path.join("saves", file_name), mode="r+", encoding="utf-8")
     file_strings = file.readlines()
@@ -162,14 +165,14 @@ def file_reader(file_name):  # чтение файла
     string_num += 2
 
     index = 10
-    while file_strings[string_num].split()[0] != ")":  # чтение владельцев и информации о них
+    while file_strings[string_num].split()[0] != ")":  # чтение спрайтов регионов
         if file_strings[string_num].split()[0] != '|' and file_strings[string_num].split()[0] != ')':
             if file_strings[string_num].split()[1] == "objects":
                 index += 1
                 sprite_bildings[file_strings[string_num].split()[2].split('.')[0] + str(index)] = \
                     file_strings[string_num].split()[2].split('.')[1:-2], \
-                    file_strings[string_num].split()[2].split('.')[
-                        -2], file_strings[string_num].split()[2].split('.')[-1]
+                        file_strings[string_num].split()[2].split('.')[
+                            -2], file_strings[string_num].split()[2].split('.')[-1]
             else:
                 sls_for_sprite_info.append(file_strings[string_num].split()[2])
         else:
@@ -187,7 +190,7 @@ def file_reader(file_name):  # чтение файла
                                     int(sls_for_sprite_info[3]), sls_for_sprite_info[4], sls_for_sprite_info[5], color,
                                     sls_for_sprite_info[6], sls_for_sprite_info[7], sls_for_sprite_info[8],
                                     sls_for_sprite_info[9], sls_for_sprite_info[10].split('.'),
-                                    sprite_bildings_copy, "open_region_info"))
+                                    sprite_bildings_copy, "open_region_info", screen_))
             sls_for_sprite_info.clear()
             sprite_bildings.clear()
         string_num += 1
