@@ -1,18 +1,28 @@
+import pygame
+
 from Main_Game_File import *
 from special import *
-from special_2 import render_setting, open_settings, setting_event
+from setting_file import render_setting, open_settings, setting_event, apply_settings
 
 
 # файл для работы со стартовым меню
 
 class StartMenu:  # класс запуска меню
     def __init__(self):
+        self.main_size = 1536, 800  # основной размер окна игры (при чем основной размер меню 1100 700)
+        file = open(os.path.join("data", "settings", "setting_file"))
+        settings = file.readlines()  # считывание настроек с файла data\settings\setting_file
+        self.fps = int(settings[0])
+        self.size_cof = int(settings[3][0]) // self.main_size[1]
+        file.close()
+
         self.image_for_menu = None  # параметры окна задаются в функции create_window()
         self.screen = None  # нужно для того, чтобы после завершения работы всех функций класса
         self.create_window()  # после повторного вызова не пришлось заново объявлять параметры окна
 
         # объявление спрайтов меню, экземпляров класса SpriteCreate, из special.py
-        self.sprite_play_btn = MenySpriteCreate(self.screen, 320, 30, "btn_GamePlay.png", True, 'open_start_menu')
+        self.sprite_play_btn = MenySpriteCreate(self.screen, 320 * self.size_cof, 30 * self.size_cof,
+                                                "btn_GamePlay.png", True, 'open_start_menu')
         self.sprite_open_setting = MenySpriteCreate(self.screen, 950, 90, "setting_btn_img.png", True, 'open_setting')
         self.sprite_start_menu = MenySpriteCreate(self.screen, 80, 50, "start_menu.png", False)
         self.sprite_start_afrika = MenySpriteCreate(self.screen, self.sprite_start_menu.rect.x + 30,
@@ -77,6 +87,9 @@ class StartMenu:  # класс запуска меню
         self.sprite_file_name_mistake2 = MenySpriteCreate(self.screen, self.sprite_file_menu.rect.x - 70, 20,
                                                           "file_name_mistake2.png",
                                                           False, 'file_name_mistake2')
+        self.sprite_file_name_mistake2 = MenySpriteCreate(self.screen, self.sprite_file_menu.rect.x - 70, 20,
+                                                          "file_name_mistake2.png",
+                                                          False, '')
         # "глобальные" атрибуты для класса
         self.clicked_sprites = []  # список нажатых спрайтов
         self.selected = False  # переменные, определяющие выбран ли спрайт
@@ -127,6 +140,12 @@ class StartMenu:  # класс запуска меню
     def create_window(self):
         os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (200, 50)  # задание стартового положения окна
         pygame.init()
+        pygame.mixer.init()
+
+        # pygame.mixer.music.load(os.path.join("sounds", "shtil-orkestr-vagner.mp3"))
+        # pygame.mixer.music.play()
+        # pygame.mixer.music.set_volume(0.1)
+
         size_menu = 1100, 700  # размер окна меню
         self.screen = pygame.display.set_mode(size_menu)
         self.image_for_menu = load_image("test1.png")  # фон для меню
@@ -134,12 +153,24 @@ class StartMenu:  # класс запуска меню
         pygame.display.set_icon(image_for_icon)
         pygame.display.set_caption('The final strike')  # название приложения
 
+    def change_settings(self, sls):
+        self.running = False
+        self.fps = int(sls[0])
+        self.size_cof = int(sls[3][0]) / self.main_size[1]
+        # print(self.fps)
+        self.sprite_change_size()
+        self.fake__init__()
+
+    def sprite_change_size(self):
+        for i in [self.other_menu_sprites, self.list_error_sprite, self.start_menu_sprites]
+
     def fake__init__(self):
         pygame.quit()
-        for i in [self.start_menu_sprites, self.file_list_sprites]:
+        for i in [self.start_menu_sprites, self.file_list_sprites,  self.file_list_sprites]:
             for spr_ in i:
                 spr_.visible = False
         self.running = True
+        self.text_file_name = ''
         self.create_window()
         self.main_render()
 
@@ -307,7 +338,7 @@ class StartMenu:  # класс запуска меню
     def main_render(self):
         clock = pygame.time.Clock()
         while self.running:  # основной цикл игры
-            clock.tick(60)
+            clock.tick(self.fps)
             events = pygame.event.get()
             for EVENT in events:
                 setting_event(EVENT)  # передача события в обработчике работы с настройками
@@ -335,7 +366,7 @@ class StartMenu:  # класс запуска меню
 
             for s in [self.other_menu_sprites, self.start_menu_sprites, self.file_list_sprites, self.list_error_sprite]:
                 for sprit in s:  # проход по всем спрайтов всех списков
-                    if sprit.visible:
+                    if sprit.visible and sprit:
                         self.group_visible_sprite.add(sprit)  # добавление видимых спрайтов в группу
                     elif sprit in self.group_visible_sprite:  # удаление из группы, если visible == False
                         self.group_visible_sprite.remove(sprit)
@@ -355,6 +386,10 @@ class StartMenu:  # класс запуска меню
                         prompt_image = load_image(clicked_sprites_2[-1].prompt)
                         self.screen.blit(prompt_image, pos)
             self.draw_file_name()
+
+            settings_change = apply_settings(False)
+            if not self.running: break
+            if not settings_change is None: self.change_settings(settings_change)
             render_setting(self.screen)
             pygame.display.update()
 
@@ -369,20 +404,19 @@ def main():
             else:
                 app2.fake__init__()
             app1.stop()
-        elif app2.next_window:
-            app1.fake__init__()
-            app2.stop()
-        elif not app1.next_window and not app2.next_window:
-            print("все функции всех классов завершили работу")
+        if not (app2 is None):
+            if app2.next_window:
+                app1.fake__init__()
+                app2.stop()
+            elif not app1.next_window and not app2.next_window:
+                print("работа завершена в штатном режиме")
+                break
+        else:
+            print("работа завершена в штатном режиме")
             break
-
     pygame.quit()
 
 
 if __name__ == "__main__":  # запуск приложения
     file_name = ''
     main()
-
-# def open_game(file_name):
-#     del app_menu
-#     main_game(file_name)

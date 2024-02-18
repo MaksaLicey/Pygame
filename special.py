@@ -63,10 +63,11 @@ class MenySpriteCreate(pygame.sprite.Sprite):  # класс для создан�
     def __init__(self, scree=None, rect_x=0, rect_y=0, file_name="", visible_s=False, fuction_s='', promt=''):
         super().__init__()
         self.image = load_image(file_name, scree)
-        self.size = load_image(file_name).get_size()
         self.rect = self.image.get_rect()
         self.rect.x = rect_x
         self.rect.y = rect_y
+        self.image_copy = self.image  # исходное изображение, разработанное под мой экран, изменяющиеся при смене разрешения окна
+        self.rect_x_start, self.rect_y_start = rect_x, rect_y  # начальное положение спрайта
         self.visible = visible_s
         self.function = fuction_s
         self.prompt = promt  # название картинки из data, которая должна высветиться при наведении
@@ -77,7 +78,7 @@ class GameSprite(pygame.sprite.Sprite):  # класс для создания с
     def __init__(self, screen, rect_x, rect_y, file_name, visible_s=True, function=''):
         super().__init__()
         self.image = load_image(file_name, screen)
-        self.size = load_image(file_name).get_size()
+        # self.size = load_image(file_name).get_size()
         self.rect = self.image.get_rect()
         self.rect.x = rect_x
         self.rect.y = rect_y

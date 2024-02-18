@@ -1,5 +1,5 @@
 from special import *
-from special_2 import render_setting, open_settings, setting_event
+from setting_file import render_setting, open_settings, setting_event
 
 
 # главный файл игры
@@ -77,8 +77,9 @@ class MainGameClass:
     def create_window(self):
         os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (0, 30)
         pygame.init()
-        self.size_menu = 1536, 803  # размер окна
+        self.size_menu = 1536, 800  # размер окна
         self.screen_main = pygame.display.set_mode(self.size_menu)
+        # self.screen_main = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         image_for_icon = load_image("icon_for_game.png")  # изображение для иконки приложения
         pygame.display.set_icon(image_for_icon)
         pygame.display.set_caption('The final strike')  # название приложения
@@ -229,6 +230,7 @@ class MainGameClass:
                     if event.button == 1:
                         self.flag_move_1 = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
+
                     for sprit in self.sprite_map_list:  # проверка нажатия на ргион
                         pos_in_mask = event.pos[0] - sprit.rect.x, event.pos[1] - sprit.rect.y
                         if sprit.rect.collidepoint(event.pos) and sprit.mask.get_at(pos_in_mask):
