@@ -1,13 +1,18 @@
 from special import *
-from setting_file import render_setting, open_settings, setting_event
+from setting_file import render_setting, open_settings, setting_event, apply_settings
+import asyncio
 
 
 # главный файл игры
 
 class MainGameClass:
     def __init__(self, filename):
-
-        # параметры окна игры
+        self.main_size = 1536, 800  # основной размер окна игры
+        file = open(os.path.join("data", "settings", "setting_file"))
+        settings = file.readlines()  # считывание настроек с файла data\settings\setting_file
+        self.fps = int(settings[0])
+        self.size_cof = int(settings[3].split()[0]) / self.main_size[1]
+        file.close()
         self.size_menu = None
         self.screen_main = None
         self.create_window()
@@ -53,6 +58,8 @@ class MainGameClass:
         self.group_interface = pygame.sprite.Group()  # и группа для них
         self.group_buildings_icons = pygame.sprite.Group()  # группа для иконок при отображении информации о регионе
         info_list_from_file = file_reader(self.file_name, self.screen_main)  # получение информации из файла
+
+        self.time = info_list_from_file[1][-1].split(".")
         self.sprite_map_list = info_list_from_file[0]  # список спрайтов карты
         self.group_map_sprite = pygame.sprite.Group()  # и группа спрайтов для них
         self.file_info_list = info_list_from_file[1]  # список с информацией об игре (время, сложность и тд)
@@ -77,7 +84,7 @@ class MainGameClass:
     def create_window(self):
         os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (0, 30)
         pygame.init()
-        self.size_menu = 1536, 800  # размер окна
+        self.size_menu = self.main_size[0] * self.size_cof, self.main_size[1] * self.size_cof  # размер окна
         self.screen_main = pygame.display.set_mode(self.size_menu)
         # self.screen_main = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         image_for_icon = load_image("icon_for_game.png")  # изображение для иконки приложения
@@ -94,16 +101,17 @@ class MainGameClass:
         self.main_render()
 
     def return_start_menu(self):
-        open_settings(True)
-        self.running_2 = False
-        self.next_window = True
+        if open_settings(True) != "error":
+            # open_settings(True)
+            self.running_2 = False
+            self.next_window = True
 
     def move_region_menu(self, flag, mouse_start_pos, flag2=False):  # функция для перемещения спрайта
         delta_x = pygame.mouse.get_pos()[0] - mouse_start_pos[0]  # изменение координат по x
         delta_y = pygame.mouse.get_pos()[1] - mouse_start_pos[1]  # изменение координат по y
         if flag:  # True, если левая кнопка мыши зажата на спрайте
-            self.sprite_move_now.rect.x = delta_x
-            self.sprite_move_now.rect.y = delta_y
+            self.sprite_move_now.rect.x = delta_x #* self.size_cof
+            self.sprite_move_now.rect.y = delta_y #* self.size_cof
         if self.sprite_move_now.rect.y + self.sprite_move_now.rect[2] - 450 > self.size_menu[1]:
             self.sprite_move_now.rect.y -= 3
         elif self.sprite_move_now.rect.y < -350:
@@ -174,53 +182,88 @@ class MainGameClass:
                 self.single_group_1.draw(self.screen_main)
                 str1 = "население: " + str(self.selected_map_sprite.population) + "чел."
                 str2 = ("поддержка враждебных партий: " + str("%.2f" % (
-                        self.selected_map_sprite.support_government / self.selected_map_sprite.population * 100)) + "%"
+                        self.selected_map_sprite.support_government / self.selected_map_sprite.population * 100 * self.size_cof)) + "%"
                         + " (" + str(self.selected_map_sprite.support_government) + ')')
                 str3 = ("поддержка нашего движения: " + str(
                     "%.2f" % (
-                            self.selected_map_sprite.our_support / self.selected_map_sprite.population * 100)) + "%" +
+                            self.selected_map_sprite.our_support / self.selected_map_sprite.population * 100 * self.size_cof)) + "%" +
                         " (" + str(self.selected_map_sprite.our_support) + ")")
                 sls = [str1, str2, str3]
                 for i in range(len(sls)):  # отображение информации о спрайте
-                    self.screen_main.blit(pygame.font.Font(None, 26).render(sls[i], True, (255, 0, 0)),
-                                          (self.sprite_province_info.rect.x + 20,
-                                           self.sprite_province_info.rect.y + 30 + (i * 20)))
+                    self.screen_main.blit(
+                        pygame.font.Font(None, int(26 * self.size_cof)).render(sls[i], True, (255, 0, 0)),
+                        (self.sprite_province_info.rect.x + 20 * self.size_cof,
+                         self.sprite_province_info.rect.y + 30 * self.size_cof + (i * 20 * self.size_cof)))
                 self.screen_main.blit(
-                    pygame.font.Font(None, 32).render(self.selected_map_sprite.name, True, (255, 0, 0)),
-                    (self.sprite_province_info.rect.x + 200,
-                     self.sprite_province_info.rect.y + 10))  # вывести название региона
+                    pygame.font.Font(None, int(32 * self.size_cof)).render(self.selected_map_sprite.name, True,
+                                                                           (255, 0, 0)),
+                    (self.sprite_province_info.rect.x + 200 * self.size_cof,
+                     self.sprite_province_info.rect.y + 10 * self.size_cof))  # вывести название региона
                 index_x = 0  # индекс смещения иконок по x и y соответственно
                 for el in self.selected_map_sprite.town_list:  # цикл для отображения всех построек и местности региона
                     self.group_buildings_icons.add(
-                        GameSprite(self.screen_main, self.sprite_province_info.rect.x + 10 + index_x * 60,
+                        GameSprite(self.screen_main,
+                                   self.sprite_province_info.rect.x + 10 + index_x * 60,
                                    self.sprite_province_info.rect.y + 110,
                                    os.path.join("bildings_icons", el[0:-2]) + '.png'))
                     self.group_buildings_icons.add(
-                        GameSprite(self.screen_main, self.sprite_province_info.rect.x + 10 + index_x * 60,
+                        GameSprite(self.screen_main,
+                                   self.sprite_province_info.rect.x + 10 + index_x * 60,
                                    self.sprite_province_info.rect.y + 90,
                                    os.path.join("bildings_icons",
                                                 self.selected_map_sprite.town_list[el][-1]) + '.png'))
                     for i in range(len(self.selected_map_sprite.town_list[el][0])):
                         self.group_buildings_icons.add(
-                            GameSprite(self.screen_main, self.sprite_province_info.rect.x + 10 + index_x * 60,
-                                       self.sprite_province_info.rect.y + 110 + (i + 1) * 60,
+                            GameSprite(self.screen_main,
+                                       self.sprite_province_info.rect.x + 10 + index_x * 60,
+                                       self.sprite_province_info.rect.y + 110 + (
+                                                   i + 1) * 60,
                                        os.path.join("bildings_icons",
                                                     self.selected_map_sprite.town_list[el][0][
                                                         i]) + '.png'))
                     index_x += 1
+                # self.sprite_change_size()
                 self.group_buildings_icons.draw(self.screen_main)
                 for i in self.group_buildings_icons:  # Очистка
                     self.group_buildings_icons.remove(i)
 
+
+    def change_settings(self, settings_change):
+        # print(settings_change)
+        self.running_2 = False
+        self.fps = int(settings_change[0])
+        self.size_cof = int(settings_change[3][0]) / self.main_size[1]
+        self.sprite_change_size()
+        self.fake__init__()
+
+    def sprite_change_size(self):
+        for i in [self.special_sprite_list, [self.sprite_province_info, self.sprite_country_info],
+                  self.interface_sprite_list, self.menus_sprite_list1, self.sprite_map_list, self.group_buildings_icons]:
+            for spr_ in i:
+                spr_.rect.x = spr_.rect_x_start * self.size_cof
+                spr_.rect.y = spr_.rect_y_start * self.size_cof
+                spr_.rect[2] = spr_.image_copy.get_size()[0] * self.size_cof
+                spr_.rect[3] = spr_.image_copy.get_size()[1] * self.size_cof
+                spr_.image = pygame.transform.scale(spr_.image_copy, (
+                    spr_.image_copy.get_size()[0] * self.size_cof,
+                    spr_.image_copy.get_size()[1] * self.size_cof))
+        for region in self.sprite_map_list:
+            for holder in self.country_list:
+                if region.holder == holder.name:
+                    region.update(holder.color.split("."), self.size_cof)
+
     def stop(self):
         self.next_window = False
+
+    async def al(self):
+        print("!")
 
     def main_render(self):
         for sprite_ in self.sprite_map_list:  # добавление всех спрайтов карты в группу group_map_sprite
             self.group_map_sprite.add(sprite_)
         clock = pygame.time.Clock()
         while self.running_2:
-            clock.tick(60)
+            clock.tick(self.fps)
             events = pygame.event.get()
             for event in events:
                 setting_event(event)
@@ -267,7 +310,6 @@ class MainGameClass:
             self.group_map_sprite.draw(self.screen_main)  # отрисовка карты
 
             self.open_sprite_list_2()  # отрисовка меню страны
-
             self.open_sprite_list()  # отрисовка меню региона
 
             self.move_region_menu(self.flag_move_1, self.mouse_start,
@@ -275,5 +317,7 @@ class MainGameClass:
                 self.flag_move_1, self.mouse_start)
 
             self.render_interface()  # отрисовка интерфейса
+            settings_change = apply_settings(False)
+            if not settings_change is None: self.change_settings(settings_change)
             render_setting(self.screen_main)
             pygame.display.update()

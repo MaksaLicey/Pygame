@@ -78,10 +78,12 @@ class GameSprite(pygame.sprite.Sprite):  # класс для создания с
     def __init__(self, screen, rect_x, rect_y, file_name, visible_s=True, function=''):
         super().__init__()
         self.image = load_image(file_name, screen)
+        self.image_copy = self.image
         # self.size = load_image(file_name).get_size()
         self.rect = self.image.get_rect()
         self.rect.x = rect_x
         self.rect.y = rect_y
+        self.rect_x_start, self.rect_y_start = rect_x, rect_y
         self.visible = visible_s
         self.function = function  # название картинки из data, которая должна высветиться при наведении
         #  курсором на спрайт, если подсказка не нужна передать ''
@@ -107,13 +109,14 @@ class SpritesCreateForMap(pygame.sprite.Sprite):  # класс для созда
         self.update = self.update  # функция для обновления цвета
         self.id_province = id_province  # номер клетки
         self.name = name  # имя провинции
-        self.image_start = load_image(file_name_img, screen_)  # сохранения первоначального изображения
+        self.image_copy = load_image(file_name_img, screen_)  # сохранения первоначального изображения
         self.color = (int(color[0]), int(color[1]), int(color[2]))  # цвет, полученный от текущего владельца
-        self.image = change_color(self.image_start, self.color)  # задание цвета (нужно только во время создания)
+        self.image = change_color(self.image_copy, self.color)  # задание цвета (нужно только во время создания)
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)  # маска спрайта
         self.rect.x = rect_x
         self.rect.y = rect_y
+        self.rect_x_start, self.rect_y_start = rect_x, rect_y
         self.holder = holder  # имя текущего владельца
         self.population = int(population)  # количество населения в регионе
         self.tension = tension  # уровень напряженности в регионе
@@ -123,9 +126,9 @@ class SpritesCreateForMap(pygame.sprite.Sprite):  # класс для созда
         self.town_list = town_list
         self.function = function  # хз скорей всего потом уберу
 
-    def update(self, color):  # обновление цвета провинции (к примеру, после захвата)
+    def update(self, color, koff=1):  # обновление цвета провинции (к примеру, после захвата)
         self.color = (int(color[0]), int(color[1]), int(color[2]))
-        self.image = change_color(self.image_start, self.color)
+        self.image = change_color(pygame.transform.scale(self.image_copy, (self.image_copy.get_size()[0] * koff, self.image_copy.get_size()[1] * koff)), self.color)
 
 
 def file_reader(file_name, screen_):  # чтение файла

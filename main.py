@@ -13,15 +13,16 @@ class StartMenu:  # класс запуска меню
         file = open(os.path.join("data", "settings", "setting_file"))
         settings = file.readlines()  # считывание настроек с файла data\settings\setting_file
         self.fps = int(settings[0])
-        self.size_cof = int(settings[3][0]) // self.main_size[1]
+        self.size_cof = int(settings[3].split()[0]) / self.main_size[1]
         file.close()
 
-        self.image_for_menu = None  # параметры окна задаются в функции create_window()
+        self.image_for_menu = None
+        self.image_for_menu_copy = None
         self.screen = None  # нужно для того, чтобы после завершения работы всех функций класса
         self.create_window()  # после повторного вызова не пришлось заново объявлять параметры окна
 
         # объявление спрайтов меню, экземпляров класса SpriteCreate, из special.py
-        self.sprite_play_btn = MenySpriteCreate(self.screen, 320 * self.size_cof, 30 * self.size_cof,
+        self.sprite_play_btn = MenySpriteCreate(self.screen, 320, 30,
                                                 "btn_GamePlay.png", True, 'open_start_menu')
         self.sprite_open_setting = MenySpriteCreate(self.screen, 950, 90, "setting_btn_img.png", True, 'open_setting')
         self.sprite_start_menu = MenySpriteCreate(self.screen, 80, 50, "start_menu.png", False)
@@ -105,7 +106,7 @@ class StartMenu:  # класс запуска меню
         self.next_window = False  # если переменная True, начнется выполнение функции main_render другого класса
 
         # общий список спрайтов меню, хранит спрайты, которые не относятся к другим списка спрайтов
-        self.other_menu_sprites = [self.sprite_play_btn, self.sprite_open_setting]
+        self.other_menu_sprites = [self.sprite_play_btn, self.sprite_open_setting, ]
         self.list_error_sprite = [self.sprite_file_name_mistake, self.sprite_file_name_mistake2]
         # список спрайтов меню подготовки к началу игры
         self.start_menu_sprites = [self.sprite_start_menu, self.sprite_start_afrika, self.sprite_start_europe,
@@ -135,6 +136,7 @@ class StartMenu:  # класс запуска меню
             "open_setting": open_settings,  # открытие настроек (функция из special_2.py)
 
         }
+        self.sprite_change_size()
         self.main_render()  # запуск функции с циклом игры
 
     def create_window(self):
@@ -146,27 +148,42 @@ class StartMenu:  # класс запуска меню
         # pygame.mixer.music.play()
         # pygame.mixer.music.set_volume(0.1)
 
-        size_menu = 1100, 700  # размер окна меню
+        size_menu = 1100 * self.size_cof, 700 * self.size_cof  # размер окна меню
         self.screen = pygame.display.set_mode(size_menu)
-        self.image_for_menu = load_image("test1.png")  # фон для меню
+        self.image_for_menu = load_image("test1.png", self.screen)
+        self.image_for_menu_copy = self.image_for_menu
+        self.image_for_menu = pygame.transform.scale(self.image_for_menu_copy, (
+            self.image_for_menu_copy.get_size()[0] * (self.size_cof),
+            self.image_for_menu_copy.get_size()[1] * (self.size_cof)))
         image_for_icon = load_image("icon_for_game.png")  # изображение для иконки приложения
         pygame.display.set_icon(image_for_icon)
         pygame.display.set_caption('The final strike')  # название приложения
 
     def change_settings(self, sls):
         self.running = False
-        self.fps = int(sls[0])
-        self.size_cof = int(sls[3][0]) / self.main_size[1]
         # print(self.fps)
+        self.fps = int(sls[0])
+
+        print(int(sls[3][0]))
+        print(int(sls[3][0]) / self.main_size[1])
+        self.size_cof = int(sls[3][0]) / self.main_size[1]
         self.sprite_change_size()
         self.fake__init__()
 
     def sprite_change_size(self):
-        for i in [self.other_menu_sprites, self.list_error_sprite, self.start_menu_sprites]
+        for i in [self.other_menu_sprites, self.list_error_sprite, self.start_menu_sprites, self.file_list_sprites]:
+            for sprit_s in i:
+                sprit_s.rect.x = sprit_s.rect_x_start * self.size_cof
+                sprit_s.rect.y = sprit_s.rect_y_start * self.size_cof
+                sprit_s.rect[2] = sprit_s.image_copy.get_size()[0] * self.size_cof
+                sprit_s.rect[3] = sprit_s.image_copy.get_size()[1] * self.size_cof
+                sprit_s.image = pygame.transform.scale(sprit_s.image_copy, (
+                    sprit_s.image_copy.get_size()[0] * self.size_cof,
+                    sprit_s.image_copy.get_size()[1] * self.size_cof))
 
     def fake__init__(self):
         pygame.quit()
-        for i in [self.start_menu_sprites, self.file_list_sprites,  self.file_list_sprites]:
+        for i in [self.start_menu_sprites, self.file_list_sprites, self.file_list_sprites]:
             for spr_ in i:
                 spr_.visible = False
         self.running = True
@@ -244,14 +261,14 @@ class StartMenu:  # класс запуска меню
             if self.text_file_name in get_files_list()[1]:
                 self.sprite_file_name_mistake.visible = True
             else:
-                open_settings(True)  # закрытие настроек при переходе в игре
-                self.err1 = self.create_file()
-                if self.err1 is None:
-                    self.running = False
-                    self.next_window = True
-                else:
-                    # self.err1 = None
-                    self.sprite_file_name_mistake2.visible = True
+                if open_settings(True) != "error":  # закрытие настроек при переходе в игре
+                    self.err1 = self.create_file()
+                    if self.err1 is None:
+                        self.running = False
+                        self.next_window = True
+                    else:
+                        # self.err1 = None
+                        self.sprite_file_name_mistake2.visible = True
 
     def create_file(self):  # получаем параметры игры
         global file_name
@@ -285,55 +302,66 @@ class StartMenu:  # класс запуска меню
             if len(self.clicked_sprites) > 0:
                 if self.selected_sprite_1.function == 'edit_selected_spr_1':
                     pygame.draw.rect(self.screen, (255, 0, 0), (
-                        self.selected_sprite_1.rect[0] - 15, self.selected_sprite_1.rect[1] - 15,
-                        self.selected_sprite_1.rect[2] + 30, self.selected_sprite_1.rect[3] + 30),
-                                     width=5)
+                        self.selected_sprite_1.rect[0] - 15 * self.size_cof,
+                        self.selected_sprite_1.rect[1] - 15 * self.size_cof,
+                        self.selected_sprite_1.rect[2] + 30 * self.size_cof,
+                        self.selected_sprite_1.rect[3] + 30 * self.size_cof),
+                                     width=round(5 * self.size_cof))
         if self.selected_2 and self.sprite_start_menu.visible and not self.sprite_file_menu.visible:
             if len(self.clicked_sprites) > 0:
                 if self.selected_sprite_2.function == 'edit_selected_spr_2':
                     pygame.draw.rect(self.screen, (0, 255, 0), (
                         self.selected_sprite_2.rect[0], self.selected_sprite_2.rect[1],
                         self.selected_sprite_2.rect[2],
-                        self.selected_sprite_2.rect[3]), width=5)
+                        self.selected_sprite_2.rect[3]), width=round(5 * self.size_cof))
         if self.selected_3 and self.sprite_start_menu.visible and not self.sprite_file_menu.visible:
             if len(self.clicked_sprites) > 0:
                 if self.selected_sprite_3.function == 'edit_selected_spr_3':
                     pygame.draw.rect(self.screen, (0, 0, 255), (
-                        self.selected_sprite_3.rect[0], self.selected_sprite_3.rect[1],
-                        self.selected_sprite_3.rect[2],
-                        self.selected_sprite_3.rect[3]), width=5)
+                        self.selected_sprite_3.rect.x, self.selected_sprite_3.rect.y,
+                        self.selected_sprite_3.image.get_size()[0],
+                        self.selected_sprite_3.image.get_size()[1]), width=round(5 * self.size_cof))
 
     def draw_file_name(self):  # отображение вводимого названия файла
         if self.sprite_input_name_file.visible:
             if self.text_input_active:
                 self.screen.fill((200, 100, 100), self.sprite_input_name_file.rect)
-                txt_surface = pygame.font.Font(None, 40).render(self.text_file_name, True, (70, 195, 150))
+                txt_surface = pygame.font.Font(None, round(40 * self.size_cof)).render(self.text_file_name, True,
+                                                                                       (70, 195, 150))
                 self.screen.blit(txt_surface,
-                                 (self.sprite_input_name_file.rect.x + 10, self.sprite_input_name_file.rect.y + 5))
+                                 (self.sprite_input_name_file.rect.x + 10 * self.size_cof,
+                                  self.sprite_input_name_file.rect.y + 5 * self.size_cof))
             else:
-                txt_surface = pygame.font.Font(None, 40).render(self.text_file_name, True, (100, 100, 200))
+                txt_surface = pygame.font.Font(None, round(40 * self.size_cof)).render(self.text_file_name, True,
+                                                                                       (100, 100, 200))
                 self.screen.blit(txt_surface,
-                                 (self.sprite_input_name_file.rect.x + 10, self.sprite_input_name_file.rect.y + 5))
+                                 (self.sprite_input_name_file.rect.x + 10 * self.size_cof,
+                                  self.sprite_input_name_file.rect.y + 5 * self.size_cof))
 
     def draw_list_files(self):  # отрисовка списка файлов сохранений
         if self.sprite_file_menu.visible:
             for i in range(len(get_files_list()[0])):
-                txt_surface = pygame.font.Font(None, 32).render(self.text_file_name, True, (255, 0, 0))
+                txt_surface = pygame.font.Font(None, round(32 * self.size_cof)).render(self.text_file_name, True,
+                                                                                       (255, 0, 0))
                 max_text_width = 150  # максимальная длинна имени файла
                 if txt_surface.get_width() >= max_text_width:  # проверка длины текста
                     for b in range(len(self.text_file_name)):
-                        txt_surface = pygame.font.Font(None, 32).render(self.text_file_name[0:b], True, (255, 0, 0))
+                        txt_surface = pygame.font.Font(None, round(32 * self.size_cof)).render(self.text_file_name[0:b],
+                                                                                               True, (255, 0, 0))
                         if txt_surface.get_width() >= max_text_width:
                             self.text_file_name = self.text_file_name[0:b]
                             break
-                self.screen.blit(pygame.font.Font(None, 32).render(get_files_list()[0][i], True, (255, 0, 0)),
-                                 (self.sprite_file_menu.rect.x + 20, self.sprite_file_menu.rect.y + 20 + (i * 20)))
+                self.screen.blit(
+                    pygame.font.Font(None, round(32 * self.size_cof)).render(get_files_list()[0][i], True, (255, 0, 0)),
+                    (self.sprite_file_menu.rect.x + 20 * self.size_cof,
+                     self.sprite_file_menu.rect.y + 20 + (i * 20) * self.size_cof))
 
     def draw_error_text(self):  # отображение текста ошибки
         if self.sprite_file_name_mistake2.visible:
-            self.screen.blit(pygame.font.Font(None, 30).render(str(self.err1), True, (255, 255, 200)),
-                             (self.sprite_file_name_mistake2.rect.x + 20,
-                              self.sprite_file_name_mistake2.rect.y + 40))
+            self.screen.blit(
+                pygame.font.Font(None, round(30 * self.size_cof)).render(str(self.err1), True, (255, 255, 200)),
+                (self.sprite_file_name_mistake2.rect.x + 20 * self.size_cof,
+                 self.sprite_file_name_mistake2.rect.y + 40 * self.size_cof))
 
     def main_render(self):
         clock = pygame.time.Clock()
@@ -388,10 +416,10 @@ class StartMenu:  # класс запуска меню
             self.draw_file_name()
 
             settings_change = apply_settings(False)
-            if not self.running: break
             if not settings_change is None: self.change_settings(settings_change)
-            render_setting(self.screen)
-            pygame.display.update()
+            if self.running:
+                render_setting(self.screen)
+                pygame.display.update()
 
 
 def main():

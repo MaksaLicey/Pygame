@@ -1,6 +1,7 @@
 import pygame.transform
 
 from special import *
+import asyncio
 
 
 class StartMenu:
@@ -20,6 +21,7 @@ class StartMenu:
             "open_start_menu": self.open_start_menu
         }
         self.create_window()
+
         self.main_render()
 
     def open_start_menu(self):
