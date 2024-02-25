@@ -1,5 +1,3 @@
-import pygame
-
 from Main_Game_File import *
 from special import *
 from setting_file import render_setting, open_settings, setting_event, apply_settings
@@ -9,21 +7,24 @@ from setting_file import render_setting, open_settings, setting_event, apply_set
 
 class StartMenu:  # класс запуска меню
     def __init__(self):
-        self.main_size = 1536, 800  # основной размер окна игры (при чем основной размер меню 1100 700)
+        self.game_size = 1536, 800  # основной размер окна игры (чтоб рассчитать коэффициент изменения размера)
+        #  (основой размер окна меню 1100 * 700)
         file = open(os.path.join("data", "settings", "setting_file"))
         settings = file.readlines()  # считывание настроек с файла data\settings\setting_file
-        self.fps = int(settings[0])
-        self.size_cof = int(settings[3].split()[0]) / self.main_size[1]
+        self.fps = int(settings[0])  # получение ограничения фпс
+        self.size_cof = int(settings[3].split()[0]) / self.game_size[1]  # коэффициент изменения размеров
         file.close()
 
-        self.image_for_menu = None
-        self.image_for_menu_copy = None
+        self.image_for_menu = None  # изображения заднего фона меню
+        self.image_for_menu_copy = None  # его копия (для нормального изменения размера)
         self.screen = None  # нужно для того, чтобы после завершения работы всех функций класса
         self.create_window()  # после повторного вызова не пришлось заново объявлять параметры окна
 
         # объявление спрайтов меню, экземпляров класса SpriteCreate, из special.py
         self.sprite_play_btn = MenySpriteCreate(self.screen, 320, 30,
                                                 "btn_GamePlay.png", True, 'open_start_menu')
+        self.sprite_leave_game = MenySpriteCreate(self.screen, 320, 200,
+                                                  "leave_game.png", True, 'stop')
         self.sprite_open_setting = MenySpriteCreate(self.screen, 950, 90, "setting_btn_img.png", True, 'open_setting')
         self.sprite_start_menu = MenySpriteCreate(self.screen, 80, 50, "start_menu.png", False)
         self.sprite_start_afrika = MenySpriteCreate(self.screen, self.sprite_start_menu.rect.x + 30,
@@ -96,9 +97,9 @@ class StartMenu:  # класс запуска меню
         self.selected = False  # переменные, определяющие выбран ли спрайт
         self.selected_2 = False  # в каждой строке (карты, сложность, стартовый
         self.selected_3 = False  # персонаж
-        self.selected_sprite_1 = MenySpriteCreate()  # спрайты, далее использующиеся как копии
-        self.selected_sprite_2 = MenySpriteCreate()  # выбранных спрайтов из каждой группы
-        self.selected_sprite_3 = MenySpriteCreate()
+        self.selected_sprite_1 = None  # спрайты, далее использующиеся как копии выбранных спрайтов
+        self.selected_sprite_2 = None  # из каждой группы выбора стартовых настроек (карта, сложность, лидер)
+        self.selected_sprite_3 = None
         self.text_input_active = False  # переменная для начала записи названия нового файла
         self.err1 = None  # сообщение об ошибке при создании нового файла
         self.text_file_name = ''  # строка для хранения введенного названия файла
@@ -106,7 +107,7 @@ class StartMenu:  # класс запуска меню
         self.next_window = False  # если переменная True, начнется выполнение функции main_render другого класса
 
         # общий список спрайтов меню, хранит спрайты, которые не относятся к другим списка спрайтов
-        self.other_menu_sprites = [self.sprite_play_btn, self.sprite_open_setting, ]
+        self.other_menu_sprites = [self.sprite_play_btn, self.sprite_open_setting, self.sprite_leave_game]
         self.list_error_sprite = [self.sprite_file_name_mistake, self.sprite_file_name_mistake2]
         # список спрайтов меню подготовки к началу игры
         self.start_menu_sprites = [self.sprite_start_menu, self.sprite_start_afrika, self.sprite_start_europe,
@@ -134,12 +135,13 @@ class StartMenu:  # класс запуска меню
             "edit_selected_spr_3": self.edit_selected_spr_3,  # изменение выбранного спрайта лидера
             "open_start_menu": self.open_start_menu,  # открытие меню начальных параметров игры
             "open_setting": open_settings,  # открытие настроек (функция из special_2.py)
+            "stop": self.leave_game
 
         }
-        self.sprite_change_size()
+        self.sprite_change_size()  # изменение спрайтов с учетом size_cof
         self.main_render()  # запуск функции с циклом игры
 
-    def create_window(self):
+    def create_window(self):  # задание параметров окна
         os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (200, 50)  # задание стартового положения окна
         pygame.init()
         pygame.mixer.init()
@@ -153,24 +155,32 @@ class StartMenu:  # класс запуска меню
         self.image_for_menu = load_image("test1.png", self.screen)
         self.image_for_menu_copy = self.image_for_menu
         self.image_for_menu = pygame.transform.scale(self.image_for_menu_copy, (
-            self.image_for_menu_copy.get_size()[0] * (self.size_cof),
-            self.image_for_menu_copy.get_size()[1] * (self.size_cof)))
+            self.image_for_menu_copy.get_size()[0] * self.size_cof,
+            self.image_for_menu_copy.get_size()[1] * self.size_cof))
         image_for_icon = load_image("icon_for_game.png")  # изображение для иконки приложения
         pygame.display.set_icon(image_for_icon)
         pygame.display.set_caption('The final strike')  # название приложения
 
-    def change_settings(self, sls):
+    def fake__init__(self):  # запуск приложения без новой инициализации
+        pygame.quit()
+        for i in [self.start_menu_sprites, self.file_list_sprites, self.file_list_sprites]:
+            for spr_ in i:
+                spr_.visible = False
+        self.running = True
+        self.text_file_name = ''
+        self.create_window()
+        self.main_render()
+
+    def change_settings(self, sls):  # смена настроек
         self.running = False
-        # print(self.fps)
         self.fps = int(sls[0])
 
-        print(int(sls[3][0]))
-        print(int(sls[3][0]) / self.main_size[1])
-        self.size_cof = int(sls[3][0]) / self.main_size[1]
+        self.size_cof = int(sls[3][0]) / self.game_size[1]
         self.sprite_change_size()
         self.fake__init__()
 
-    def sprite_change_size(self):
+    def sprite_change_size(self):  # умножение положения спрайтов на size_cof
+        #  и замена текущих изображений на копии начальных с изменением размера на size_cof
         for i in [self.other_menu_sprites, self.list_error_sprite, self.start_menu_sprites, self.file_list_sprites]:
             for sprit_s in i:
                 sprit_s.rect.x = sprit_s.rect_x_start * self.size_cof
@@ -181,21 +191,11 @@ class StartMenu:  # класс запуска меню
                     sprit_s.image_copy.get_size()[0] * self.size_cof,
                     sprit_s.image_copy.get_size()[1] * self.size_cof))
 
-    def fake__init__(self):
-        pygame.quit()
-        for i in [self.start_menu_sprites, self.file_list_sprites, self.file_list_sprites]:
-            for spr_ in i:
-                spr_.visible = False
-        self.running = True
-        self.text_file_name = ''
-        self.create_window()
-        self.main_render()
-
-    def file_name_mistake(self):
+    def file_name_mistake(self):  # закрыть окно ошибки "файл с таким именем уже есть"
         if self.clicked_sprites[-1].function == "file_name_mistake":
             self.sprite_file_name_mistake.visible = False
 
-    def file_name_mistake2(self):
+    def file_name_mistake2(self):  # закрыть окно о прочих ошибках
         if self.clicked_sprites[-1].function == "file_name_mistake2":
             self.sprite_file_name_mistake2.visible = False
 
@@ -212,38 +212,11 @@ class StartMenu:  # класс запуска меню
             get_files_list(-1)
 
     def open_list(self):  # открытие окна создания файла
-        if (self.clicked_sprites[-1].function == 'open_list' and self.selected_sprite_1 != pygame.sprite and
-                self.selected_sprite_2 != pygame.sprite and self.selected_sprite_3 != pygame.sprite):
+        if (self.clicked_sprites[-1].function == 'open_list' and not self.selected_sprite_1 is None and
+                not self.selected_sprite_2 is None and not self.selected_sprite_3 is None):
             self.list_file_menu()
 
-    def edit_selected_spr_1(self):  # изменение выбранного спрайта карты
-        if not self.sprite_file_menu.visible:
-            if self.clicked_sprites[-1] != self.selected_sprite_1:
-                self.selected_sprite_1 = self.clicked_sprites[-1]
-                self.selected = True
-            else:
-                self.selected_sprite_1 = pygame.sprite
-                self.selected = False
-
-    def edit_selected_spr_2(self):  # изменение выбранного спрайта сложности
-        if self.clicked_sprites[-1].function == 'edit_selected_spr_2' and not self.sprite_file_menu.visible:
-            if self.clicked_sprites[-1] != self.selected_sprite_2:
-                self.selected_sprite_2 = self.clicked_sprites[-1]
-                self.selected_2 = True
-            else:
-                self.selected_sprite_2 = pygame.sprite
-                self.selected_2 = False
-
-    def edit_selected_spr_3(self):  # изменение выбранного спрайта лидера
-        if self.clicked_sprites[-1].function == 'edit_selected_spr_3' and not self.sprite_file_menu.visible:
-            if self.clicked_sprites[-1] != self.selected_sprite_3:
-                self.selected_sprite_3 = self.clicked_sprites[-1]
-                self.selected_3 = True
-            else:
-                self.selected_sprite_3 = pygame.sprite
-                self.selected_3 = False
-
-    def open_start_menu(self):
+    def open_start_menu(self):  # открытие меню стартовых настроек
         for spr in self.start_menu_sprites:
             spr.visible = not spr.visible
         if not self.sprite_start_menu.visible:
@@ -256,45 +229,32 @@ class StartMenu:  # класс запуска меню
             self.sprite_file_name_mistake.visible = self.sprite_file_menu.visible
             self.sprite_file_name_mistake2.visible = self.sprite_file_menu.visible
 
-    def create_file_and_start(self):  # если все хорошо создаться файл и откроется игра
-        if self.clicked_sprites[-1].function == "create_file_and_start" and self.text_file_name != "":
-            if self.text_file_name in get_files_list()[1]:
-                self.sprite_file_name_mistake.visible = True
+    def edit_selected_spr_1(self):  # изменение выбранного спрайта карты
+        if not self.sprite_file_menu.visible:
+            if self.clicked_sprites[-1] != self.selected_sprite_1:
+                self.selected_sprite_1 = self.clicked_sprites[-1]
+                self.selected = True
             else:
-                if open_settings(True) != "error":  # закрытие настроек при переходе в игре
-                    self.err1 = self.create_file()
-                    if self.err1 is None:
-                        self.running = False
-                        self.next_window = True
-                    else:
-                        # self.err1 = None
-                        self.sprite_file_name_mistake2.visible = True
+                self.selected_sprite_1 = None
+                self.selected = False
 
-    def create_file(self):  # получаем параметры игры
-        global file_name
-        try:
-            file_game = open(os.path.join("saves", self.text_file_name), mode="w",
-                             encoding="utf-8")  # создаем новый файл
-            file_game.write(f"file_name = {self.text_file_name}" + "\n")  # записываем в него все стартовые параметры
-            file_game.write(f"map_name = {self.selected_sprite_1.prompt[7:-4]}" + "\n")
-            file_game.write(f"difficult = {self.selected_sprite_2.prompt[7:-4]} \n")
-            file_game.write(f"leader = {self.selected_sprite_3.prompt[7:-4]} \n")
-            file_game.write(f"time = 1.1.2030.00.00 \n")
-            f = open(os.path.join('starts_file', f'{self.selected_sprite_1.prompt[7:-4]}.txt'), 'r+', encoding="utf-8")
-            # открываем файл, в соответствии с выбранной картой
-            sls = f.readlines()
-            for i in sls:
-                file_game.write(i)  # переписываем его содержимое в недавно созданный файл
-            f.close()
-            file_game.close()
-            file_name = self.text_file_name
-            pygame.quit()
-            return None
-        except Exception as e:
-            return e
+    def edit_selected_spr_2(self):  # изменение выбранного спрайта сложности
+        if self.clicked_sprites[-1].function == 'edit_selected_spr_2' and not self.sprite_file_menu.visible:
+            if self.clicked_sprites[-1] != self.selected_sprite_2:
+                self.selected_sprite_2 = self.clicked_sprites[-1]
+                self.selected_2 = True
+            else:
+                self.selected_sprite_2 = None
+                self.selected_2 = False
 
-    def stop(self):
-        self.next_window = False
+    def edit_selected_spr_3(self):  # изменение выбранного спрайта лидера
+        if self.clicked_sprites[-1].function == 'edit_selected_spr_3' and not self.sprite_file_menu.visible:
+            if self.clicked_sprites[-1] != self.selected_sprite_3:
+                self.selected_sprite_3 = self.clicked_sprites[-1]
+                self.selected_3 = True
+            else:
+                self.selected_sprite_3 = None
+                self.selected_3 = False
 
     # Далее функции draw_... , просто, чтоб цикл был более читабельным
     def draw_selected(self):  # отображение выделения спрайтов начальных параметров
@@ -373,18 +333,18 @@ class StartMenu:  # класс запуска меню
                 if EVENT.type == pygame.QUIT:
                     self.running = False
                 if EVENT.type == pygame.MOUSEBUTTONDOWN:
-                    if pygame.mouse.get_pressed()[0]:
+                    if pygame.mouse.get_pressed()[0]:  # проверка нажатия ЛКМ
                         pos = pygame.mouse.get_pos()
                         self.clicked_sprites = [s for s in self.group_visible_sprite if s.rect.collidepoint(
                             pos)]  # добавление видимых спрайтов, на которых был курсор мыши во время нажатия
                         if len(self.clicked_sprites) > 0:
                             if self.clicked_sprites[-1].function != '':
                                 func_call = self.func_dictionary[self.clicked_sprites[-1].function]
-                                func_call()
+                                func_call()  # вызов функции верхнего нажатого спрайта
                 if EVENT.type == pygame.KEYDOWN:
                     if self.text_input_active:  # ввод названия файла
                         if EVENT.key == pygame.K_BACKSPACE:
-                            self.text_file_name = self.text_file_name[:-1]
+                            self.text_file_name = self.text_file_name[:-1]  # удаление символа на backspace
                         else:
                             if (EVENT.unicode != '\\' and EVENT.unicode != '\r' and EVENT.unicode != '\t'
                                     and EVENT.unicode != '\x1b'):  # '/' '|'  '*'
@@ -398,14 +358,14 @@ class StartMenu:  # класс запуска меню
                         self.group_visible_sprite.add(sprit)  # добавление видимых спрайтов в группу
                     elif sprit in self.group_visible_sprite:  # удаление из группы, если visible == False
                         self.group_visible_sprite.remove(sprit)
-            if not self.running: break
+            if not self.running: break  # на всякий случай
             self.screen.blit(self.image_for_menu, (0, 0))  # отрисовка изображения фона
             self.group_visible_sprite.draw(self.screen)  # отображение видимых спрайтов
             self.draw_selected()  # отображение выделения спрайтов карты, сложности и лидера
 
             self.draw_list_files()
             self.draw_error_text()
-            if EVENT.type == pygame.MOUSEMOTION:
+            if EVENT.type == pygame.MOUSEMOTION:  # события при передвижении курсора
                 pos = pygame.mouse.get_pos()
                 clicked_sprites_2 = [s for s in self.group_visible_sprite if s.rect.collidepoint(pos)]
                 # добавление спрайтов, на которых попал курсор мыши в список
@@ -415,14 +375,57 @@ class StartMenu:  # класс запуска меню
                         self.screen.blit(prompt_image, pos)
             self.draw_file_name()
 
-            settings_change = apply_settings(False)
+            settings_change = apply_settings(False)  # запрос об изменении настроек
             if not settings_change is None: self.change_settings(settings_change)
             if self.running:
-                render_setting(self.screen)
+                render_setting(self.screen)  # отображение окна настроек
                 pygame.display.update()
 
+    def create_file_and_start(self):  # если все хорошо создаться файл и откроется игра
+        if self.clicked_sprites[-1].function == "create_file_and_start" and self.text_file_name != "":
+            if self.text_file_name in get_files_list()[1]:
+                self.sprite_file_name_mistake.visible = True
+            else:
+                if open_settings(True) != "error":  # закрытие настроек при переходе в игре
+                    self.err1 = self.create_file()
+                    if self.err1 is None:
+                        self.running = False
+                        self.next_window = True
+                    else:
+                        # self.err1 = None
+                        self.sprite_file_name_mistake2.visible = True
 
-def main():
+    def create_file(self):  # получаем параметры игры
+        global file_name
+        try:
+            file_game = open(os.path.join("saves", self.text_file_name), mode="w",
+                             encoding="utf-8")  # создаем новый файл
+            file_game.write(f"file_name = {self.text_file_name}" + "\n")  # записываем в него все стартовые параметры
+            file_game.write(f"map_name = {self.selected_sprite_1.prompt[7:-4]}" + "\n")
+            file_game.write(f"difficult = {self.selected_sprite_2.prompt[7:-4]} \n")
+            file_game.write(f"leader = {self.selected_sprite_3.prompt[7:-4]} \n")
+            file_game.write(f"time = 1.1.2030.00.00 \n")
+            f = open(os.path.join('starts_file', f'{self.selected_sprite_1.prompt[7:-4]}.txt'), 'r+', encoding="utf-8")
+            # открываем файл, в соответствии с выбранной картой
+            sls = f.readlines()
+            for i in sls:
+                file_game.write(i)  # переписываем его содержимое в недавно созданный файл
+            f.close()
+            file_game.close()
+            file_name = self.text_file_name
+            pygame.quit()
+            return None
+        except Exception as e:
+            return e
+
+    def stop(self):  # если next_window == False, приложение окна завершает работу р
+        self.next_window = False  # не переходя к следующему окну
+
+    def leave_game(self):
+        self.running = False
+
+
+def main():  # при действиях игрока запускает окно меню и игры поочередно
     app1 = StartMenu()
     app2 = None
     while True:
@@ -438,13 +441,13 @@ def main():
                 app2.stop()
             elif not app1.next_window and not app2.next_window:
                 print("работа завершена в штатном режиме")
-                break
+                break  # полное завершение работы
         else:
             print("работа завершена в штатном режиме")
             break
     pygame.quit()
 
 
-if __name__ == "__main__":  # запуск приложения
-    file_name = ''
-    main()
+if __name__ == "__main__":
+    file_name = ''  # решил оставить имя файла глобальное переменной
+    main()  # запуск приложения

@@ -21,13 +21,13 @@ sprite_down_volume = MenySpriteCreate(None, sprite_setting_menu.rect.x + 20, spr
 sprite_up_volume = MenySpriteCreate(None, sprite_setting_menu.rect.x + 330, sprite_setting_menu.rect.y + 100,
                                     os.path.join("settings", "up_volume.png"),
                                     False, "up_volume")
-sprite_check_fuel_screen = MenySpriteCreate(None, sprite_setting_menu.rect.x + 160, sprite_setting_menu.rect.y + 160,
+sprite_check_fuel_screen = MenySpriteCreate(None, sprite_setting_menu.rect.x + 160, sprite_setting_menu.rect.y + 200,
                                             os.path.join("settings", "check_box1.png"),
                                             False, "check_fuel_screen")
-sprite_check_mark = MenySpriteCreate(None, sprite_setting_menu.rect.x + 160, sprite_setting_menu.rect.y + 160,
+sprite_check_mark = MenySpriteCreate(None, sprite_setting_menu.rect.x + 160, sprite_setting_menu.rect.y + 200,
                                      os.path.join("settings", "check_mark.png"),
                                      False, "")
-sprite_input_screen_size = MenySpriteCreate(None, sprite_setting_menu.rect.x + 160, sprite_setting_menu.rect.y + 210,
+sprite_input_screen_size = MenySpriteCreate(None, sprite_setting_menu.rect.x + 160, sprite_setting_menu.rect.y + 160,
                                             os.path.join("settings", "input_screen_size.png"),
                                             False, "start_input_size")
 sprite_input_save_time = MenySpriteCreate(None, sprite_setting_menu.rect.x + 160, sprite_setting_menu.rect.y + 255,
@@ -39,9 +39,12 @@ sprite_remove_settings = MenySpriteCreate(None, sprite_setting_menu.rect.x, spri
 sprite_settings_err1 = MenySpriteCreate(None, sprite_setting_menu.rect.x, sprite_setting_menu.rect.y,
                                         os.path.join("settings", "settings_err1.png"),
                                         False, "settings_err1")
+sprite_close_settings = MenySpriteCreate(None, sprite_setting_menu.rect.x + 365, sprite_setting_menu.rect.y + 2,
+                                         os.path.join("settings", "close_settings.png"),
+                                         False, "open_settings")
 
 setting_sprite_list = [sprite_setting_menu, sprite_input_text, sprite_apply_setting, sprite_save_setting,
-                       sprite_down_volume, sprite_remove_settings,
+                       sprite_down_volume, sprite_remove_settings, sprite_close_settings,
                        sprite_up_volume, sprite_check_fuel_screen, sprite_input_screen_size, sprite_input_save_time]
 checker_single_group = pygame.sprite.GroupSingle(sprite_check_mark)
 error_single_group = pygame.sprite.GroupSingle(sprite_settings_err1)
@@ -50,22 +53,21 @@ group_for_setting = pygame.sprite.Group()
 # значения настроек
 file_settings = open(os.path.join("data", "settings", "setting_file"), encoding="utf8")
 sls = file_settings.readlines()
-fps = int(sls[0])
+fps = int(sls[0])  # считывание настроек из data\settings\setting_file
 volume = int(sls[1])
-fuel_screen = False if sls[2] == "False" else True
+auto_save = False if sls[2] == "False" else True
 screen_size1 = [int(sls[3].split()[0]), int(sls[3].split()[1])]
 koff = screen_size1[0] / 800
-print(koff)
 days_to_save = int(sls[4])
 file_settings.close()
 
-enter_fps = False
-enter_size = False
+enter_fps = False  # если True, происходит ввод ограничения фпс
+enter_size = False  # аналогично
 enter_days_of_save = False
 return_settings = False
 
 
-def change_sprites_size():
+def change_sprites_size():  # изменение размеров окна настроек (аналогично sprite_change_size классов
     global koff
     for i in [setting_sprite_list, [sprite_check_mark, sprite_settings_err1]]:
         for sprit_s in i:
@@ -78,13 +80,13 @@ def change_sprites_size():
                 sprit_s.image_copy.get_size()[1] * koff))
 
 
-def input_days_of_save():
+def input_days_of_save():  # начало\конец ввода интервала авто сохранений (в днях)
     global enter_fps, enter_size, enter_days_of_save
     enter_days_of_save = not enter_days_of_save
     if enter_days_of_save: enter_size, enter_fps = False, False
 
 
-def start_input_size():
+def start_input_size():  # начало\конец ввода размера окна игры
     global enter_fps, enter_size, enter_days_of_save
     if not sprite_check_mark.visible:
         enter_size = not enter_size
@@ -94,58 +96,59 @@ def start_input_size():
         start_input_size()
 
 
-def input_fps():
+def input_fps():  # начала\конец ввода ограничения фпс
     global enter_fps, enter_size, enter_days_of_save
     enter_fps = not enter_fps
     if enter_fps: enter_size, enter_days_of_save = False, False
 
 
-def down_volume():
+def down_volume():  # уменьшить громкость звуков в игре
     global volume
-    if volume > 0: volume -= 1
+    if volume >= 0: volume -= 1
 
 
-def up_volume():
+def up_volume():  # увеличить громкость в игре
     global volume
     if volume < 10: volume += 1
 
 
-def check_fuel_screen(flag=True):
-    global fuel_screen, enter_size
+def check_auto_save(flag=True):  # включение\отключение авто сохранения
+    global auto_save, enter_size, enter_size, enter_fps, enter_days_of_save
     if flag:
-        enter_size = False
-        fuel_screen = not fuel_screen
-    sprite_check_mark.visible = fuel_screen
+        enter_size, enter_fps, enter_days_of_save = False, False, False
+        auto_save = not auto_save
+    sprite_check_mark.visible = auto_save
 
 
-def save_settings():
-    global fps, volume, fuel_screen, screen_size1, days_to_save, enter_size, enter_fps, enter_days_of_save
+def save_settings():  # сохранить выбранные настройки в data\settings\setting_file
+    global fps, volume, auto_save, screen_size1, days_to_save, enter_size, enter_fps, enter_days_of_save
     enter_size, enter_fps, enter_days_of_save = False, False, False
     check_validity()
-    file_settings = open(os.path.join("data", "settings", "setting_file"), "w", encoding="utf8")
-    file_settings.write(str(fps) + '\r')
-    file_settings.write(str(volume) + '\r')
-    file_settings.write(str(fuel_screen) + '\r')
-    file_settings.write(str(screen_size1[0]) + " " + str(int(float(screen_size1[1]) * 1.92)) + '\r')
-    file_settings.write(str(days_to_save))
-    file_settings.close()
+    file_setting = open(os.path.join("data", "settings", "setting_file"), "w", encoding="utf8")
+    file_setting.write(str(fps) + '\r')
+    file_setting.write(str(volume) + '\r')
+    file_setting.write(str(auto_save) + '\r')
+    file_setting.write(str(screen_size1[0]) + " " + str(int(float(screen_size1[1]) * 1.92)) + '\r')
+    file_setting.write(str(days_to_save))
+    file_setting.close()
 
 
-def remove_settings():
-    global fps, volume, fuel_screen, screen_size1, days_to_save, enter_size, enter_fps, enter_days_of_save
+def remove_settings():  # вернуть настройки по умолчанию (сохранены в data\settings\setting_file_base)
+    global fps, volume, auto_save, screen_size1, days_to_save, enter_size, enter_fps, enter_days_of_save
     file_settings = open(os.path.join("data", "settings", "setting_file_base"), encoding="utf8")
-    sls = file_settings.readlines()
-    fps = int(sls[0])
-    volume = int(sls[1])
-    fuel_screen = False if sls[2] == "False" else True
-    screen_size1 = [int(sls[3].split()[0]), int(sls[3].split()[1])]
+    sls1 = file_settings.readlines()
+    fps = int(sls1[0])
+    volume = int(sls1[1])
+    auto_save = False if sls1[2] == "False" else True
+    screen_size1 = [int(sls1[3].split()[0]), int(sls1[3].split()[1])]
     days_to_save = 30
     apply_settings()
     file_settings.close()
 
 
-def apply_settings(flag=True):
-    global return_settings, fps, volume, fuel_screen, screen_size1, days_to_save, enter_size, enter_fps, enter_days_of_save, koff
+def apply_settings(flag=True):  # применить настройки
+    global return_settings, fps, volume, auto_save, screen_size1, days_to_save, enter_size, enter_fps
+    global enter_days_of_save, koff
     if flag:
         return_settings = not return_settings
     if not flag and return_settings:
@@ -153,30 +156,17 @@ def apply_settings(flag=True):
         enter_fps, enter_size, enter_days_of_save = False, False, False
         check_validity()
         koff = screen_size1[0] / 800
-        print(koff, screen_size1[0])
+
         change_sprites_size()
-        return [fps, volume, fuel_screen, screen_size1, days_to_save]
+        return [fps, volume, auto_save, screen_size1, days_to_save]
 
 
-def settings_err1():
+def settings_err1():  # закрытие окна об ошибке (настройки отличаются от сохраненных)
     sprite_settings_err1.visible = False
 
 
-function_set = {
-    "start_input": input_fps,
-    "up_volume": up_volume,
-    "down_volume": down_volume,
-    "check_fuel_screen": check_fuel_screen,
-    "start_input_size": start_input_size,
-    "input_days_of_save": input_days_of_save,
-    "save_settings": save_settings,
-    "remove_settings": remove_settings,
-    "apply_settings": apply_settings
-}
-
-
-def check_validity():
-    global fps, volume, fuel_screen, screen_size1, days_to_save, enter_size, enter_fps, enter_days_of_save
+def check_validity():  # проверка корректности введенных данных
+    global fps, volume, auto_save, screen_size1, days_to_save, enter_size, enter_fps, enter_days_of_save
     if not enter_fps:
         if fps <= 5:
             fps = 5
@@ -194,7 +184,7 @@ def check_validity():
             screen_size1[0] = 2150
 
 
-def setting_event(event):
+def setting_event(event):  # обработка события из цикла игры текущего окна
     global enter_fps, enter_fps, fps, screen_size1, days_to_save, enter_days_of_save, enter_size
     if sprite_setting_menu.visible:
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -236,18 +226,17 @@ def setting_event(event):
             except Exception as e:
                 error = e
 
-    check_fuel_screen(False)
+    check_auto_save(False)
     check_validity()
 
 
 def open_settings(flag=False):
-    global fps, volume, fuel_screen, screen_size1, days_to_save
+    global fps, volume, auto_save, screen_size1, days_to_save
     if setting_sprite_list[0].visible:
         file_settings = open(os.path.join("data", "settings", "setting_file"), encoding="utf8")
         sls = file_settings.readlines()
-
         if (int(sls[0]) != fps or days_to_save != int(sls[4]) or screen_size1[0] != int(sls[3].split()[0]) or
-                screen_size1[0] != int(sls[3].split()[0]) or sls[2][0:4] != str(fuel_screen)):
+                int(screen_size1[0]) != int(sls[3].split()[0]) or ''.join(sls[2][0:5].split()) != str(auto_save)):
             sprite_settings_err1.visible = True
         file_settings.close()
     if not flag:
@@ -263,7 +252,7 @@ def open_settings(flag=False):
             return "error"
 
 
-def render_setting(screen):
+def render_setting(screen):  # изображение окна настроек на принимаемый экран
     for i in setting_sprite_list:
         if i.visible:
             group_for_setting.add(i)
@@ -274,8 +263,10 @@ def render_setting(screen):
         str1 = 'ограничение фпс (5--144): '
         str2 = 'громкость аудио: '
         str3 = ' '
-        str5 = 'разрешение:'
-        sls = [str1, str2, str3, str5]
+        str5 = '(!:'
+        str6 = '!:'
+        str7 = 'интревал'
+        sls = [str1, str2, str3, str5, str6, str7]
         for i in range(len(sls)):  # отображение информации о спрайте
             # print(koff, screen_size1[0])
             screen.blit(pygame.font.Font(None, round(28 * koff)).render(sls[i], True,
@@ -311,3 +302,17 @@ def render_setting(screen):
         screen.blit(pygame.font.Font(None, round(26 * koff)).render(
             str(days_to_save), True, (0, 0, 0)),
             (sprite_input_save_time.rect.x + 10, sprite_input_save_time.rect.y + 5))
+
+
+function_set = {
+    "start_input": input_fps,
+    "up_volume": up_volume,
+    "down_volume": down_volume,
+    "check_fuel_screen": check_auto_save,
+    "start_input_size": start_input_size,
+    "input_days_of_save": input_days_of_save,
+    "save_settings": save_settings,
+    "remove_settings": remove_settings,
+    "apply_settings": apply_settings,
+    "open_settings": open_settings
+}

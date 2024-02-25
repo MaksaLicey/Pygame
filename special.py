@@ -1,10 +1,6 @@
 import pygame
 import os
-import sys
 from os import walk
-
-
-# from special_2 import *
 
 
 # вспомогательный файл с функциями и классами
@@ -22,7 +18,7 @@ def load_image(name, screen=None, colorkey=None):  # функция для за�
         if colorkey == -1:
             colorkey = image.get_at((0, 0))
         image.set_colorkey(colorkey)
-    elif screen != None:
+    elif not (screen is None):
         image = image.convert_alpha()
     return image
 
@@ -66,20 +62,19 @@ class MenySpriteCreate(pygame.sprite.Sprite):  # класс для создан�
         self.rect = self.image.get_rect()
         self.rect.x = rect_x
         self.rect.y = rect_y
-        self.image_copy = self.image  # исходное изображение, разработанное под мой экран, изменяющиеся при смене разрешения окна
+        self.image_copy = self.image  # исходное изображение
         self.rect_x_start, self.rect_y_start = rect_x, rect_y  # начальное положение спрайта
-        self.visible = visible_s
-        self.function = fuction_s
+        self.visible = visible_s  # видимость спрайта
+        self.function = fuction_s  # функция по нажатию
         self.prompt = promt  # название картинки из data, которая должна высветиться при наведении
         #  курсором на спрайт, если подсказка не нужна передать ''
 
 
-class GameSprite(pygame.sprite.Sprite):  # класс для создания спрайтов игры
+class GameSprite(pygame.sprite.Sprite):  # класс для создания спрайтов игры (в основном для меню)
     def __init__(self, screen, rect_x, rect_y, file_name, visible_s=True, function=''):
         super().__init__()
         self.image = load_image(file_name, screen)
         self.image_copy = self.image
-        # self.size = load_image(file_name).get_size()
         self.rect = self.image.get_rect()
         self.rect.x = rect_x
         self.rect.y = rect_y
@@ -90,16 +85,29 @@ class GameSprite(pygame.sprite.Sprite):  # класс для создания с
 
 
 class Countries:  # класс владельцев провинций
-    def __init__(self, name, color, money, duty, flag, bot, holder_army):
+    def __init__(self, name, color, money, duty, flag, bot, health_costs, army_costs, political_costs, education_costs,
+                 finansical_costs, police_costs, income_tax_1, income_tax_2, holder_army):
         self.name = name
         self.color = color
         self.control_id = []
-        self.army = holder_army
-        self.money = money  # текущий баланс
-        self.duty = duty  # внешний долг государства
+        self.money = int(money)  # текущий баланс
+        self.duty = int(duty)  # внешний долг государства
         # print(name, color, money, duty, flag, bot1, holder_army)
         self.bot = True if bot == "True" else False  # бот или игрок?
         self.flag = flag  # название файла флага страны из data\flags
+        self.health_costs = int(health_costs)  # доля ВВП на финансирование здравоохранения
+        self.army_costs = int(army_costs)  # процент ВВП на содержание армии
+        self.political_costs = int(political_costs)  # расходы на содержание гос аппарата
+        self.education_costs = int(education_costs)  # доля ВВП на финансирование образования
+        self.finansical_costs = int(finansical_costs)  # доля ВВП на финансирование предпринимательства
+        self.police_costs = int(police_costs)  # доля ВВП на финансирование полиции
+        self.income_tax_1 = int(income_tax_1)  # ставка подоходного налога на физических лиц
+        self.income_tax_2 = int(income_tax_2)  # ставка подоходного налога на компании
+
+        self.army = holder_army
+        # словарь войск (ID провинции: число пехоты, число вспомогательных соединений пехоты(отряды БМП и БТР),
+        # число артиллерийских расчетов, количество танковых соединений, самолеты превосходства в воздухе (истребители),
+        # самолеты земной поддержки (штурмовики, стратегические бомбардировщики)
 
 
 class SpritesCreateForMap(pygame.sprite.Sprite):  # класс для создания спрайтов карты
@@ -126,9 +134,12 @@ class SpritesCreateForMap(pygame.sprite.Sprite):  # класс для созда
         self.town_list = town_list
         self.function = function  # хз скорей всего потом уберу
 
-    def update(self, color, koff=1):  # обновление цвета провинции (к примеру, после захвата)
+    def update(self, color, koff=1):
+        # обновление цвета провинции и маски (к примеру, после захвата или изменения разрешения)
         self.color = (int(color[0]), int(color[1]), int(color[2]))
-        self.image = change_color(pygame.transform.scale(self.image_copy, (self.image_copy.get_size()[0] * koff, self.image_copy.get_size()[1] * koff)), self.color)
+        self.image = change_color(pygame.transform.scale(self.image_copy, (
+            self.image_copy.get_size()[0] * koff, self.image_copy.get_size()[1] * koff)), self.color)
+        self.mask = pygame.mask.from_surface(self.image)  # маска спрайта
 
 
 def file_reader(file_name, screen_):  # чтение файла
@@ -141,7 +152,6 @@ def file_reader(file_name, screen_):  # чтение файла
     holder_info_list, list_of_holders = [], []  # список для информации о читаемом владельце и список
     # всех владельцев соответственно
     string_num = 0  # номер читаемой строки
-    # Т.к. класс SpritesCreateForMap и Countries никак не связаны, каждый, что определить
     sprite_bildings = {}
     holder_army = {}
 
@@ -161,7 +171,9 @@ def file_reader(file_name, screen_):  # чтение файла
             army2 = holder_army.copy()
             list_of_holders.append(
                 Countries(holder_info_list[0], holder_info_list[1], holder_info_list[2], holder_info_list[3],
-                          os.path.join("flags", holder_info_list[4]), holder_info_list[5], army2))
+                          os.path.join("flags", holder_info_list[4]), holder_info_list[5], holder_info_list[6],
+                          holder_info_list[7], holder_info_list[8], holder_info_list[9], holder_info_list[10],
+                          holder_info_list[11], holder_info_list[12], holder_info_list[13], army2))
             # list_of_holders.append(Countries(holder_info_list[0], holder_info_list[1], holder_army))
             holder_info_list.clear()
             holder_army.clear()
