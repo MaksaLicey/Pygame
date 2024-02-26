@@ -216,9 +216,9 @@ class StartMenu:  # класс запуска меню
                 not self.selected_sprite_2 is None and not self.selected_sprite_3 is None):
             self.list_file_menu()
 
-    def open_start_menu(self):  # открытие меню стартовых настроек
+    def open_start_menu(self, flag=True):  # открытие меню стартовых настроек
         for spr in self.start_menu_sprites:
-            spr.visible = not spr.visible
+            spr.visible = not spr.visible if flag else False
         if not self.sprite_start_menu.visible:
             self.list_file_menu()
 
@@ -349,8 +349,12 @@ class StartMenu:  # класс запуска меню
                             if (EVENT.unicode != '\\' and EVENT.unicode != '\r' and EVENT.unicode != '\t'
                                     and EVENT.unicode != '\x1b'):  # '/' '|'  '*'
                                 self.text_file_name += EVENT.unicode
-                    if EVENT.key == pygame.K_ESCAPE and self.sprite_file_menu.visible:
-                        self.list_file_menu()  # закрытие меню создания файла на esc
+                    if EVENT.key == pygame.K_ESCAPE:
+                        if self.sprite_file_menu.visible:
+                            self.list_file_menu()  # закрытие меню создания файла на esc
+                        else:
+                            if not self.file_list_sprites[0].visible:
+                                self.open_start_menu(False)
 
             for s in [self.other_menu_sprites, self.start_menu_sprites, self.file_list_sprites, self.list_error_sprite]:
                 for sprit in s:  # проход по всем спрайтов всех списков
