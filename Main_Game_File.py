@@ -2,6 +2,8 @@ import pygame.mouse
 
 from special import *
 from setting_file import render_setting, open_settings, setting_event, apply_settings
+
+
 # import asyncio
 
 
@@ -86,6 +88,7 @@ class MainGameClass:  # класс приложения игры
         info_list_from_file = file_reader(self.file_name, self.screen_main)  # получение информации из файла
         self.time = info_list_from_file[1][-1].split(".")
         self.sprite_map_list = info_list_from_file[0]  # список спрайтов карты
+        # print(self.sprite_map_list[0].town_list)
         self.group_map_sprite = pygame.sprite.Group()  # и группа спрайтов для них
         self.file_info_list = info_list_from_file[1]  # список с информацией об игре (время, сложность и тд)
         self.country_list = info_list_from_file[2]  # список стран (возможных владельцев)
@@ -104,21 +107,21 @@ class MainGameClass:  # класс приложения игры
                                              os.path.join("game_sprites", "health_costs.png"), False,
                                              "")
         self.sprite_up_tax_1 = GameSprite(self.screen_main, self.country_political.rect.x + 20,
-                                          self.country_political.rect.y + 450,
-                                          os.path.join("game_sprites", "low_ecomic_law.png"), False,
+                                          self.country_political.rect.y + 410,
+                                          os.path.join("game_sprites", "up_law.png"), False,
                                           "up_tax_1")
         self.sprite_down_tax_1 = GameSprite(self.screen_main, self.country_political.rect.x + 60,
-                                            self.country_political.rect.y + 450,
-                                            os.path.join("game_sprites", "low_ecomic_law.png"), False,
-                                            "up_tax_2")
-        self.sprite_down_tax_2 = GameSprite(self.screen_main, self.country_political.rect.x + 60,
-                                            self.country_political.rect.y + 490,
-                                            os.path.join("game_sprites", "low_ecomic_law.png"), False,
-                                            "down_tax_2")
+                                            self.country_political.rect.y + 410,
+                                            os.path.join("game_sprites", "down_law.png"), False,
+                                            "down_tax_1")
         self.sprite_up_tax_2 = GameSprite(self.screen_main, self.country_political.rect.x + 20,
-                                          self.country_political.rect.y + 490,
-                                          os.path.join("game_sprites", "low_ecomic_law.png"), False,
+                                          self.country_political.rect.y + 450,
+                                          os.path.join("game_sprites", "up_law.png"), False,
                                           "up_tax_2")
+        self.sprite_down_tax_2 = GameSprite(self.screen_main, self.country_political.rect.x + 60,
+                                            self.country_political.rect.y + 450,
+                                            os.path.join("game_sprites", "down_law.png"), False,
+                                            "down_tax_2")
 
         self.interface_sprite_list = [self.top_panel, self.sprite_open_menu, self.dept_up1, self.dept_up2,
                                       self.dept_down1, self.dept_down2,
@@ -135,6 +138,9 @@ class MainGameClass:  # класс приложения игры
 
         self.sls_img_1 = []  # список для картинок местности регионе
         self.sls_img_2 = []  # список для картинок построек местности в регионе
+        self.sls_img_3 = []  # список для картинок уровня прочности построек в местности
+        self.sls_img_4 = []  # список для изображений кнопок ремонта и разрушения инфраструктуры
+        # P.S. не определился какая максимальная "длинна" региона может быть и сколько спрайтов кнопок надо создать
 
         self.functions = {
             # наконец решил оформить код, исполняемый при нажатии
@@ -215,15 +221,16 @@ class MainGameClass:  # класс приложения игры
         for spr_ in self.political_interface:
             spr_.visible = not spr_.visible if flag else False
 
-    def dept_change(self, factor=0):
+    def dept_change(self, factor=0):  # наращивание либо выплата госдолга
         if self.player.duty + factor < 0:
             self.player.money -= self.player.duty
             self.player.duty = 0
         else:
             self.player.money += factor * 5 if pygame.key.get_mods() == 4097 else factor
+            # если зажать shift при увеличении\уменьшении долга произойдет изменение на factor * 5
             self.player.duty += factor * 5 if pygame.key.get_mods() == 4097 else factor
 
-        if self.player.money < 0:
+        if self.player.money < 0:  # Автоматическое кредитование, т.к. баланс не может быть < 0
             self.player.duty += -1 * self.player.money + 10
             self.player.money += -1 * self.player.money + 10
 
@@ -250,30 +257,43 @@ class MainGameClass:  # класс приложения игры
         if self.sprite_country_info.visible:
             self.single_group_2.draw(self.screen_main)
             index = 0
-            for i in range(len(self.country_list)):
-                if self.selected_map_sprite_2.holder == self.country_list[i].name:
-                    index = i
-                    break
+            # for i in range(len(self.country_list)):
+            #     if self.selected_map_sprite_2.holder == self.country_list[i].name:
+            #         index = i
+            #         break
+            self.screen_main.blit(
+                pygame.font.Font(None, int(32 * self.size_cof)).render(self.selected_map_sprite_2.holder, True,
+                                                                       (0, 0, 0)), (
+                    self.sprite_country_info.rect.x + 100 * self.size_cof,
+                    self.sprite_country_info.rect.y + 10 * self.size_cof))
             if not self.country_list[index].bot:  # отображение если выбранная страна - игрок (self.bot == False)
                 pass
             else:  # отображение окна, если выбранная страна это бот
                 pass
 
-    def open_sprite_list(self, flag=False, sprite=None):  # функция для смены видимости окна и его отображения
+    def open_sprite_list(self, flag=False, sprite=None):  # функция для смены видимости окна региона и его отображения
         # если передать True и экземпляр нажатого класса SpritesCreateForMap,
         # то выбранный регион изменится на переданный спрайт
         if flag:
-            if not(sprite is None) and self.sprite_province_info.visible and self.selected_map_sprite != sprite:
+            if not (sprite is None) and self.sprite_province_info.visible and self.selected_map_sprite != sprite:
                 self.selected_map_sprite = sprite
             else:
                 self.selected_map_sprite = sprite
                 self.sprite_province_info.visible = not self.sprite_province_info.visible
             if self.sprite_province_info.visible:
-                self.sls_img_1.clear()
-                self.sls_img_2.clear()
+                self.sls_img_1.clear()  # коллекция картинок для местности
+                self.sls_img_2.clear()  # коллекция картинок для строений
+                self.sls_img_3.clear()
+                self.sls_img_4.clear()
+
                 for el in self.selected_map_sprite.town_list:
                     self.sls_img_1.append(
                         load_image(os.path.join("bildings_icons", el[0:-2]) + '.png', self.screen_main))
+                    self.sls_img_3.append(
+                        load_image(os.path.join("bildings_icons", self.selected_map_sprite.town_list[el][-1]) + '.png',
+                                   self.screen_main))
+                    self.sls_img_4.append(load_image(os.path.join("bildings_icons", "restore.png"), self.screen_main))
+                    self.sls_img_4.append(load_image(os.path.join("bildings_icons", "destroy.png"), self.screen_main))
                     for i in range(len(self.selected_map_sprite.town_list[el][0])):
                         self.sls_img_2.append(load_image(
                             os.path.join("bildings_icons", self.selected_map_sprite.town_list[el][0][i]) + '.png',
@@ -289,7 +309,17 @@ class MainGameClass:  # класс приложения игры
                     "%.2f" % (
                             self.selected_map_sprite.our_support / self.selected_map_sprite.population * 100 * self.size_cof)) + "%" +
                         " (" + str(self.selected_map_sprite.our_support) + ")")
-                sls = [str1, str2, str3]
+                str4 = ("союзные войска: " + str(self.player.army[self.selected_map_sprite.id][0]))
+                str5 = []
+                str5_copy = []
+                for c in self.country_list:
+                    if c.army[self.selected_map_sprite.id][0] != [0] * 5 and c.army != self.player.army:
+                        str__ = ''
+                        for i in c.army[self.selected_map_sprite.id][0]:
+                            str__ += str(i) + '   '
+                        str5.append(c.name + ' (' + self.player.diplomacy[c.name][1] + ') ' + str__)
+                str5_copy = str5[0:4] + ['...'] if len(str5) > 4 else str5  # выводить не более 4 армий различных стран
+                sls = [str1, str2, str3, str4, *str5_copy]
                 for i in range(len(sls)):  # отображение информации о спрайте
                     self.screen_main.blit(
                         pygame.font.Font(None, int(26 * self.size_cof)).render(sls[i], True, (255, 0, 0)),
@@ -302,12 +332,16 @@ class MainGameClass:  # класс приложения игры
                      self.sprite_province_info.rect.y + 10 * self.size_cof))  # вывести название региона
                 index_x = 0  # индекс смещения иконок по x и y соответственно
                 for el in self.selected_map_sprite.town_list:
-                    # img = load_image(os.path.join("bildings_icons", el[0:-2]) + '.png', self.screen_main)
                     for img in self.sls_img_1:
                         self.screen_main.blit(pygame.transform.scale(img, (  # отображение иконок местности...
                             int(img.get_size()[0] * self.size_cof), int(img.get_size()[1] * self.size_cof))), (
-                                                  self.sprite_province_info.rect.x + 10 * self.size_cof + index_x * 60 * self.size_cof,
-                                                  self.sprite_province_info.rect.y + 110 * self.size_cof))
+                                                  self.sprite_province_info.rect.x + 10 * self.size_cof + index_x * 62 * self.size_cof,
+                                                  self.sprite_province_info.rect.y + 210 * self.size_cof))
+                    for img in self.sls_img_3:
+                        self.screen_main.blit(pygame.transform.scale(img, (  # отображение иконок местности...
+                            int(img.get_size()[0] * self.size_cof), int(img.get_size()[1] * self.size_cof))), (
+                                                  self.sprite_province_info.rect.x + 10 * self.size_cof + index_x * 62 * self.size_cof,
+                                                  self.sprite_province_info.rect.y + 190 * self.size_cof))
                     for i in range(len(self.selected_map_sprite.town_list[el][0])):
                         # img = load_image(
                         #     os.path.join("bildings_icons", self.selected_map_sprite.town_list[el][0][i]) + '.png',
@@ -315,10 +349,27 @@ class MainGameClass:  # класс приложения игры
                         for img_ in self.sls_img_2:
                             self.screen_main.blit(pygame.transform.scale(img_, (  # отображение иконок зданий...
                                 int(img_.get_size()[0] * self.size_cof), int(img_.get_size()[1] * self.size_cof))), (
-                                                      self.sprite_province_info.rect.x + 10 * self.size_cof + index_x * 60 * self.size_cof,
-                                                      self.sprite_province_info.rect.y + 110 * self.size_cof + (
+                                                      self.sprite_province_info.rect.x + 10 * self.size_cof + index_x * 62 * self.size_cof,
+                                                      self.sprite_province_info.rect.y + 210 * self.size_cof + (
                                                               i + 1) * 60 * self.size_cof))
+
                     index_x += 1
+                for img in range(len(self.sls_img_4)):  # отрисовка изображений починки\уничтожения инфраструктуры
+                    self.screen_main.blit(pygame.transform.scale(self.sls_img_4[img], (
+                        int(self.sls_img_4[img].get_size()[0] * self.size_cof),
+                        int(self.sls_img_4[img].get_size()[1] * self.size_cof))), (
+                                              self.sprite_province_info.rect.x + 8 * self.size_cof + img *
+                                              31 * self.size_cof,
+                                              self.sprite_province_info.rect.y + 150 * self.size_cof))
+
+    def restore_destroy(self, event):  # Т.к. кнопки ремонта\уничтожения построек это изображения
+        # (их количество изменчиво, нельзя знать заранее сколько спрйтов придется создать),
+        # то проверка нажатия на них проверяется постоянно если self.sprite_province_info.visible == True
+        if self.sprite_province_info.visible:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                cell_x = ((pygame.mouse.get_pos()[0] - self.sprite_province_info.rect.x + 8 * self.size_cof) // 25)
+                cell_x = cell_x if 1 <= cell_x <= len(self.sls_img_4) else -1
+                print(cell_x)
 
     def change_settings(self, settings_change):  # изменение настроек
         self.running_2 = False
@@ -361,16 +412,16 @@ class MainGameClass:  # класс приложения игры
             i.visible = False
 
     def up_tax_1(self):  # увеличение походного налога с физ лиц
-        self.player.income_tax_1 += 1
+        if self.player.income_tax_1 + 1 <= 100: self.player.income_tax_1 += 1
 
     def down_tax_1(self):  # уменьшение подходного налога с физ лиц
-        self.player.income_tax_1 -= 1
+        if self.player.income_tax_1 - 1 >= 0: self.player.income_tax_1 -= 1
 
     def up_tax_2(self):  # увеличение подоходного налога с компаний
-        self.player.income_tax_1 -= 2
+        if self.player.income_tax_2 + 1 <= 100: self.player.income_tax_2 += 1
 
     def down_tax_2(self):  # уменьшение подоходного налога с компаний
-        self.player.income_tax_1 -= 1
+        if self.player.income_tax_2 - 1 >= 0: self.player.income_tax_2 -= 1
 
     def render_interface(self):  # функция для отображения спрайтов интерфейса
         for i in [self.interface_sprite_list, self.menus_sprite_list1, self.interface_sprite_list_2,
@@ -387,7 +438,7 @@ class MainGameClass:  # класс приложения игры
         mobilisation = 0
         cell_x, call_y = -1, -1
         for i in self.sprite_map_list:
-            if i.id_province in self.player.control_id:
+            if i.id in self.player.control_id:
                 all_population += int(i.population)
         # self.screen_main.blit(
         #     pygame.font.Font(None, int(40 * self.size_cof)).render(str(all_population), True, (255, 0, 0)),
@@ -418,6 +469,16 @@ class MainGameClass:  # класс приложения игры
                 if call_y == 3: self.player.education_costs = cell_x
                 if call_y == 4: self.player.finansical_costs = cell_x
                 if call_y == 5: self.player.police_costs = cell_x
+            self.screen_main.blit(
+                pygame.font.Font(None, int(40 * self.size_cof)).render(str(self.player.income_tax_1), True,
+                                                                       (255, 0, 0)),
+                (self.country_political.rect.x + 100 * self.size_cof,
+                 self.country_political.rect.y + 410 * self.size_cof))
+            self.screen_main.blit(
+                pygame.font.Font(None, int(40 * self.size_cof)).render(str(self.player.income_tax_2), True,
+                                                                       (255, 0, 0)),
+                (self.country_political.rect.x + 100 * self.size_cof,
+                 self.country_political.rect.y + 450 * self.size_cof))
 
     def main_render(self):  # функция с игровым циклом
         clock = pygame.time.Clock()
@@ -425,6 +486,7 @@ class MainGameClass:  # класс приложения игры
             clock.tick(self.fps)
             events = pygame.event.get()
             for event in events:
+                self.restore_destroy(event)
                 setting_event(event)
                 if event.type == pygame.QUIT:
                     self.leave_game()

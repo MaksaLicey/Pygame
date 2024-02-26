@@ -61,4 +61,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    # print([0] * 6)
+    sls = [[1, 3, 1, 0, 0], [1, 1, 100]]
+    print(max(sls))

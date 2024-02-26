@@ -86,7 +86,7 @@ class GameSprite(pygame.sprite.Sprite):  # класс для создания с
 
 class Countries:  # класс владельцев провинций
     def __init__(self, name, color, money, duty, flag, bot, health_costs, army_costs, political_costs, education_costs,
-                 finansical_costs, police_costs, income_tax_1, income_tax_2, holder_army):
+                 finansical_costs, police_costs, income_tax_1, income_tax_2, holder_army, diplomacy):
         self.name = name
         self.color = color
         self.control_id = []
@@ -104,10 +104,14 @@ class Countries:  # класс владельцев провинций
         self.income_tax_1 = int(income_tax_1)  # ставка подоходного налога на физических лиц
         self.income_tax_2 = int(income_tax_2)  # ставка подоходного налога на компании
 
-        self.army = holder_army
+        self.army = {}
+        for id in holder_army:
+            self.army[int(id)] = [[int(s) for s in holder_army[id][0]], [int(s) for s in holder_army[id][1]]]
         # словарь войск (ID провинции: число пехоты, число вспомогательных соединений пехоты(отряды БМП и БТР),
         # число артиллерийских расчетов, количество танковых соединений, самолеты превосходства в воздухе (истребители),
         # самолеты земной поддержки (штурмовики, стратегические бомбардировщики)
+        # затем также через точку приказы для артиллерии, авиации, наземных войск
+        self.diplomacy = diplomacy
 
 
 class SpritesCreateForMap(pygame.sprite.Sprite):  # класс для создания спрайтов карты
@@ -115,7 +119,7 @@ class SpritesCreateForMap(pygame.sprite.Sprite):  # класс для созда
                  population, tension, support_government, our_support, neighbours, town_list, function, screen_):
         super().__init__()
         self.update = self.update  # функция для обновления цвета
-        self.id_province = id_province  # номер клетки
+        self.id = int(id_province)  # номер клетки
         self.name = name  # имя провинции
         self.image_copy = load_image(file_name_img, screen_)  # сохранения первоначального изображения
         self.color = (int(color[0]), int(color[1]), int(color[2]))  # цвет, полученный от текущего владельца
@@ -154,6 +158,7 @@ def file_reader(file_name, screen_):  # чтение файла
     string_num = 0  # номер читаемой строки
     sprite_bildings = {}
     holder_army = {}
+    diplomacy = {}
 
     while file_strings[string_num].split()[0] != "holder(":  # чтение информации об игре (все строки до "holder(")
         sls_for_file_info.append(file_strings[string_num].split()[2])  # чтобы потом обратиться к какому-либо
@@ -163,8 +168,12 @@ def file_reader(file_name, screen_):  # чтение файла
     while file_strings[string_num].split()[0] != ")":  # чтение владельцев и информации о них
         if file_strings[string_num].split()[0] != '|' and file_strings[string_num].split()[0] != ')':
             if file_strings[string_num].split()[1] == "army_in_it":
-                holder_army[file_strings[string_num].split()[2].split('.')[0]] = file_strings[string_num].split()[
-                                                                                     2].split('.')[1:]
+                holder_army[file_strings[string_num].split()[2].split('.')[0]] = [
+                    file_strings[string_num].split()[2].split('.')[1:],
+                    file_strings[string_num].split()[3].split('.')]
+            elif file_strings[string_num].split()[0] == "diplomacy:":
+                diplomacy[file_strings[string_num].split()[1]] = [file_strings[string_num].split()[2],
+                                                                  file_strings[string_num].split()[3]]
             else:
                 holder_info_list.append(file_strings[string_num].split()[2])
         else:
@@ -173,7 +182,7 @@ def file_reader(file_name, screen_):  # чтение файла
                 Countries(holder_info_list[0], holder_info_list[1], holder_info_list[2], holder_info_list[3],
                           os.path.join("flags", holder_info_list[4]), holder_info_list[5], holder_info_list[6],
                           holder_info_list[7], holder_info_list[8], holder_info_list[9], holder_info_list[10],
-                          holder_info_list[11], holder_info_list[12], holder_info_list[13], army2))
+                          holder_info_list[11], holder_info_list[12], holder_info_list[13], army2, diplomacy))
             # list_of_holders.append(Countries(holder_info_list[0], holder_info_list[1], holder_army))
             holder_info_list.clear()
             holder_army.clear()
