@@ -105,6 +105,8 @@ class StartMenu:  # класс запуска меню
         self.text_file_name = ''  # строка для хранения введенного названия файла
         self.running = True  # пока True: выполняется цикл игры
         self.next_window = False  # если переменная True, начнется выполнение функции main_render другого класса
+        self.prompt_image = None
+        self.prompt_image_path = None
 
         # общий список спрайтов меню, хранит спрайты, которые не относятся к другим списка спрайтов
         self.other_menu_sprites = [self.sprite_play_btn, self.sprite_open_setting, self.sprite_leave_game]
@@ -157,7 +159,7 @@ class StartMenu:  # класс запуска меню
         self.image_for_menu = pygame.transform.scale(self.image_for_menu_copy, (
             self.image_for_menu_copy.get_size()[0] * self.size_cof,
             self.image_for_menu_copy.get_size()[1] * self.size_cof))
-        image_for_icon = load_image("icon_for_game.png")  # изображение для иконки приложения
+        image_for_icon = load_image("icon_for_game.png", self.screen)  # изображение для иконки приложения
         pygame.display.set_icon(image_for_icon)
         pygame.display.set_caption('The final strike')  # название приложения
 
@@ -346,7 +348,7 @@ class StartMenu:  # класс запуска меню
                         if EVENT.key == pygame.K_BACKSPACE:
                             self.text_file_name = self.text_file_name[:-1]  # удаление символа на backspace
                         else:
-                            if (EVENT.unicode != '\\' and EVENT.unicode != '\r' and EVENT.unicode != '\t'
+                            if (EVENT.unicode != '\\' and EVENT.unicode != '\r' and EVENT.unicode != 'a\t'
                                     and EVENT.unicode != '\x1b'):  # '/' '|'  '*'
                                 self.text_file_name += EVENT.unicode
                     if EVENT.key == pygame.K_ESCAPE:
@@ -374,9 +376,15 @@ class StartMenu:  # класс запуска меню
                 clicked_sprites_2 = [s for s in self.group_visible_sprite if s.rect.collidepoint(pos)]
                 # добавление спрайтов, на которых попал курсор мыши в список
                 if len(clicked_sprites_2) > 0:  # ну и отображение подсказки, если таковая есть
-                    if clicked_sprites_2[-1].prompt != '' and not self.sprite_file_menu.visible:
-                        prompt_image = load_image(clicked_sprites_2[-1].prompt)
-                        self.screen.blit(prompt_image, pos)
+                    if clicked_sprites_2[
+                        -1].prompt != '' and not self.sprite_file_menu.visible and self.prompt_image_path != \
+                            clicked_sprites_2[-1].prompt:
+                        self.prompt_image_path = clicked_sprites_2[-1].prompt
+                        img_ = load_image(clicked_sprites_2[-1].prompt, self.screen)
+                        self.prompt_image = pygame.transform.scale(img_, (
+                        img_.get_size()[0] * self.size_cof, img_.get_size()[1] * self.size_cof))
+                    if not self.prompt_image is None and clicked_sprites_2[-1].prompt != '': self.screen.blit(
+                        self.prompt_image, pos)
             self.draw_file_name()
 
             settings_change = apply_settings(False)  # запрос об изменении настроек
@@ -408,7 +416,7 @@ class StartMenu:  # класс запуска меню
             file_game.write(f"map_name = {self.selected_sprite_1.prompt[7:-4]}" + "\n")
             file_game.write(f"difficult = {self.selected_sprite_2.prompt[7:-4]} \n")
             file_game.write(f"leader = {self.selected_sprite_3.prompt[7:-4]} \n")
-            file_game.write(f"time = 1.1.2030.00.00 \n")
+            file_game.write(f"time = 1.1.2030 \n")
             f = open(os.path.join('starts_file', f'{self.selected_sprite_1.prompt[7:-4]}.txt'), 'r+', encoding="utf-8")
             # открываем файл, в соответствии с выбранной картой
             sls = f.readlines()

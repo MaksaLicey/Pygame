@@ -195,9 +195,9 @@ def file_reader(file_name, screen_):  # чтение файла
             if file_strings[string_num].split()[1] == "objects":
                 index += 1
                 sprite_bildings[file_strings[string_num].split()[2].split('.')[0] + str(index)] = \
-                    file_strings[string_num].split()[2].split('.')[1:-2], \
+                    [file_strings[string_num].split()[2].split('.')[1:-2], \
                         file_strings[string_num].split()[2].split('.')[
-                            -2], file_strings[string_num].split()[2].split('.')[-1]
+                            -2], file_strings[string_num].split()[2].split('.')[-1]]
             else:
                 sls_for_sprite_info.append(file_strings[string_num].split()[2])
         else:

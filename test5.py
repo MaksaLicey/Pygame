@@ -22,7 +22,7 @@ class Game:
                     self.sleep_time = float(str1)
                 except Exception as e:
                     print(e)
-            await asyncio.sleep(1)
+            await asyncio.sleep(self.time_now)
 
     async def time_worker2(self):
         while True:
@@ -32,7 +32,7 @@ class Game:
                 self.time_now = (time.time() - self.t0) / self.sleep_time
                 self.t0 = None
                 print(self.time_now)
-            await asyncio.sleep(1)
+            await asyncio.sleep(self.time_now)
 
     async def main(self):
         await asyncio.gather(*[self.time_worker(), self.time_worker2()])
